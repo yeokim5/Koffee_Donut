@@ -143,6 +143,11 @@ a:focus-visible {
   border-bottom: 1px solid var(--BORDER-COLOR);
 }
 
+.dash-header__title {
+  width: 9%;
+  margin: 10px;
+}
+
 .dash-header__container {
   display: flex;
   flex-flow: row nowrap;
@@ -343,6 +348,24 @@ tr {
   gap: 0.5em;
 }
 
+.header_logo {
+  width: 80%; /* Adjust the width as needed */
+  height: auto; /* Ensures the logo scales proportionally */
+  display: block; /* Ensures it behaves as a block element */
+  margin: 0; /* Resets margin */
+  padding: 0; /* Resets padding */
+  background-size: contain; /* Ensures the image fits within the element */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
+  background-position: center center; /* Centers the image within the element */
+}
+
+/* don't mess with MDE textarea attributes */
+.mdeContainer {
+  display: inline-block;
+  width: 48%;
+  vertical-align: top;
+}
+
 @media screen and (max-width: 400px) {
   h1 {
     font-size: 2rem;
@@ -354,6 +377,14 @@ tr {
 
   .icon-button {
     font-size: 1.5rem;
+  }
+
+  .header_logo {
+    width: 100%;
+  }
+
+  .dash-header__title {
+    width: 20%;
   }
 }
 
