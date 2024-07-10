@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAddNewNoteMutation } from "./notesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
-import MarkDown from "./MarkDown";
+import EditorComponent from "./EditorComponent";
 
 const NewNoteForm = ({ users }) => {
   const [addNewNote, { isLoading, isSuccess, isError, error }] =
@@ -12,45 +12,48 @@ const NewNoteForm = ({ users }) => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
-  const [userId, setUserId] = useState(users[0].id);
+  const [editorContent, setEditorContent] = useState(null);
+  const [userId, setUserId] = useState(users[0]?.id || "");
 
   useEffect(() => {
     if (isSuccess) {
       setTitle("");
-      setText("");
+      setEditorContent(null);
       setUserId("");
       navigate("/dash/notes");
     }
   }, [isSuccess, navigate]);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
-  const onTextChanged = (e) => setText(e.target.value);
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
-  const canSave = [title, text, userId].every(Boolean) && !isLoading;
+  const handleEditorChange = useCallback((content) => {
+    setEditorContent(content);
+  }, []);
+
+  const canSave = [title, editorContent, userId].every(Boolean) && !isLoading;
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
-      await addNewNote({ user: userId, title, text });
+      await addNewNote({
+        user: userId,
+        title,
+        text: JSON.stringify(editorContent),
+      });
     }
   };
 
-  const options = users.map((user) => {
-    return (
-      <option key={user.id} value={user.id}>
-        {" "}
-        {user.username}
-      </option>
-    );
-  });
+  const options = users.map((user) => (
+    <option key={user.id} value={user.id}>
+      {user.username}
+    </option>
+  ));
 
   const errClass = isError ? "errmsg" : "offscreen";
   const validTitleClass = !title ? "form__input--incomplete" : "";
-  const validTextClass = !text ? "form__input--incomplete" : "";
 
-  const content = (
+  return (
     <>
       <p className={errClass}>{error?.data?.message}</p>
       <form className="form" onSubmit={onSaveNoteClicked}>
@@ -74,19 +77,10 @@ const NewNoteForm = ({ users }) => {
           value={title}
           onChange={onTitleChanged}
         />
-        <label className="form__label" htmlFor="text">
-          Text:
+        <label className="form__label" htmlFor="content">
+          Content:
         </label>
-
-        <MarkDown />
-
-        <textarea
-          className={`form__input form__input--text ${validTextClass}`}
-          id="text"
-          name="text"
-          value={text}
-          onChange={onTextChanged}
-        />
+        <EditorComponent onChange={handleEditorChange} />
         <label
           className="form__label form__checkbox-container"
           htmlFor="username"
@@ -105,8 +99,6 @@ const NewNoteForm = ({ users }) => {
       </form>
     </>
   );
-
-  return content;
 };
 
 export default NewNoteForm;

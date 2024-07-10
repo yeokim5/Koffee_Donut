@@ -357,6 +357,21 @@ tr {
   background-size: contain; /* Ensures the image fits within the element */
   background-repeat: no-repeat; /* Prevents the image from repeating */
   background-position: center center; /* Centers the image within the element */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.header_logo:hover {
+  transform: scale(1.05); /* Slightly increase the size on hover */
+  filter: drop-shadow(
+    0 0 10px rgba(255, 255, 255, 0.7)
+  ); /* Add a white glow effect */
+}
+
+/* If your logo is an image, use this instead of background properties */
+.header_logo img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* don't mess with MDE textarea attributes */

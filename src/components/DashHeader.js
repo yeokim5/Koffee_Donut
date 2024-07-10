@@ -12,6 +12,9 @@ import { useSendLogoutMutation } from "../features/auth/authApiSlice";
 import useAuth from "../hooks/useAuth";
 import PulseLoader from "react-spinners/PulseLoader";
 
+// Import the logo image
+import logo from "../img/logo.png";
+
 const DASH_REGEX = /^\/dash(\/)?$/;
 const NOTES_REGEX = /^\/dash\/notes(\/)?$/;
 const USERS_REGEX = /^\/dash\/users(\/)?$/;
@@ -119,7 +122,7 @@ const DashHeader = () => {
       <header className="dash-header">
         <div className={`dash-header__container ${dashClass}`}>
           <Link to="/dash" className="dash-header__title">
-            <img src="../img/logo.png" className="header_logo" alt="" />
+            <img src={logo} className="header_logo" alt="Logo" />
           </Link>
           <nav className="dash-header__nav">{buttonContent}</nav>
         </div>
