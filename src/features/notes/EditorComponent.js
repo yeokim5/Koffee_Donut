@@ -8,8 +8,15 @@ import CodeTool from "@editorjs/code";
 const EDITOR_JS_TOOLS = {
   header: Header,
   list: List,
-  embed: Embed,
-  code: CodeTool,
+  embed: {
+    class: Embed,
+    config: {
+      services: {
+        youtube: true,
+        coub: true,
+      },
+    },
+  },
 };
 
 const EditorComponent = ({ initialData, onChange, readMode }) => {
