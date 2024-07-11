@@ -12,9 +12,10 @@ const EDITOR_JS_TOOLS = {
   code: CodeTool,
 };
 
-const EditorComponent = ({ initialData, onChange }) => {
+const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef();
   const initialDataRef = useRef(initialData);
+  console.log("READMODE", readMode);
 
   const initEditor = useCallback(() => {
     const editor = new EditorJS({
@@ -22,15 +23,18 @@ const EditorComponent = ({ initialData, onChange }) => {
       onReady: () => {
         ejInstance.current = editor;
       },
-      autofocus: true,
+      readOnly: readMode,
       data: initialDataRef.current || { blocks: [] },
       onChange: async () => {
-        let content = await editor.saver.save();
-        onChange(content);
+        if (!readMode) {
+          let content = await editor.saver.save();
+          onChange(content);
+        }
       },
       tools: EDITOR_JS_TOOLS,
+      minHeight: 20,
     });
-  }, [onChange]);
+  }, [readMode, onChange]);
 
   useEffect(() => {
     if (ejInstance.current === null) {
@@ -43,13 +47,7 @@ const EditorComponent = ({ initialData, onChange }) => {
     };
   }, [initEditor]);
 
-  return (
-    <div
-      id="editorjs"
-      className="editor-container"
-      style={{ backgroundColor: "white" }}
-    ></div>
-  );
+  return <div id="editorjs" className="editor-container"></div>;
 };
 
 export default EditorComponent;

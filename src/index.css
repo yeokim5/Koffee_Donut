@@ -374,11 +374,9 @@ tr {
   display: block;
 }
 
-/* don't mess with MDE textarea attributes */
-.mdeContainer {
-  display: inline-block;
-  width: 48%;
-  vertical-align: top;
+.editor-container {
+  background-color: white;
+  font-size: 15px;
 }
 
 @media screen and (max-width: 400px) {
