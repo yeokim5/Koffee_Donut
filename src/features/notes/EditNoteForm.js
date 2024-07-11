@@ -22,10 +22,8 @@ const EditNoteForm = ({ note, users }) => {
   const [title, setTitle] = useState(note.title);
 
   const [editorContent, setEditorContent] = useState(() => {
-    console.log("Initial note text:", note.text); // Debug log
     try {
       const parsedContent = JSON.parse(note.text);
-      console.log("Parsed content:", parsedContent); // Debug log
 
       return parsedContent;
     } catch (error) {
