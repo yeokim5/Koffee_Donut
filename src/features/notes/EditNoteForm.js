@@ -1,14 +1,28 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useUpdateNoteMutation, useDeleteNoteMutation } from "./notesApiSlice";
+import {
+  useUpdateNoteMutation,
+  useDeleteNoteMutation,
+  useLikeNoteMutation,
+  useDislikeNoteMutation,
+  selectNoteById,
+  useGetNotesQuery,
+} from "./notesApiSlice";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
   faTrashCan,
   faPenToSquare,
+  faMugHot,
+  faThumbsDown,
+  faThumbsUp,
+  faCaretUp,
+  faCaretDown,
 } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import EditorComponent from "./EditorComponent";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditNoteForm = ({ note, users }) => {
   const { username } = useAuth();
@@ -18,8 +32,12 @@ const EditNoteForm = ({ note, users }) => {
     deleteNote,
     { isSuccess: isDelSuccess, isError: isDelError, error: delerror },
   ] = useDeleteNoteMutation();
+  const [likeNote] = useLikeNoteMutation();
+  const [dislikeNote] = useDislikeNoteMutation();
   const navigate = useNavigate();
 
+  const user = users.find((user) => user.username === username);
+  const userId = user.id;
   const [formData, setFormData] = useState({
     title: note.title,
     editorContent: JSON.parse(note.text),
@@ -27,6 +45,9 @@ const EditNoteForm = ({ note, users }) => {
     userId: note.user,
   });
   const [editMode, setEditMode] = useState(false);
+
+  const [liked, setLiked] = useState(note.likedBy.includes(userId));
+  const [disliked, setDisliked] = useState(note.dislikedBy.includes(userId));
 
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
@@ -60,7 +81,7 @@ const EditNoteForm = ({ note, users }) => {
     if (canSave) {
       await updateNote({
         id: note.id,
-        user: formData.userId,
+        user: user.id,
         title: formData.title,
         text: JSON.stringify(formData.editorContent),
         completed: formData.completed,
@@ -90,6 +111,24 @@ const EditNoteForm = ({ note, users }) => {
   const errContent = (error?.data?.message || delerror?.data?.message) ?? "";
   const errClass = isError || isDelError ? "errmsg" : "offscreen";
   const validTitleClass = !formData.title ? "form__input--incomplete" : "";
+
+  const onLikeClicked = async () => {
+    setLiked(!liked);
+    if (disliked) setDisliked(false);
+    await likeNote({ id: note.id, userId });
+  };
+
+  const onDislikeClicked = async () => {
+    setDisliked(!disliked);
+    if (liked) setLiked(false);
+    await dislikeNote({ id: note.id, userId });
+  };
+
+  const getBackgroundColor = () => {
+    if (liked) return "skyblue";
+    if (disliked) return "rgb(246, 115, 115)";
+    return "white";
+  };
 
   const renderButtons = () => (
     <div className="form__action-buttons">
@@ -127,18 +166,19 @@ const EditNoteForm = ({ note, users }) => {
         <div className="form__title-row">{renderButtons()}</div>
         {editMode ? (
           <>
+            <h2>Edit Note</h2>
             <label className="form__label" htmlFor="note-title">
               Title:
-              <input
-                className={`form__input ${validTitleClass}`}
-                id="note-title"
-                name="title"
-                type="text"
-                autoComplete="off"
-                value={formData.title}
-                onChange={handleInputChange}
-              />
             </label>
+            <input
+              className={`form__input ${validTitleClass}`}
+              id="note-title"
+              name="title"
+              type="text"
+              autoComplete="off"
+              value={formData.title}
+              onChange={handleInputChange}
+            />
             <label className="form__label" htmlFor="note-text">
               Content:
             </label>
@@ -147,63 +187,41 @@ const EditNoteForm = ({ note, users }) => {
           <h3>{formData.title}</h3>
         )}
         {formData.editorContent ? (
-          <EditorComponent
-            onChange={handleEditorChange}
-            initialData={formData.editorContent}
-            readMode={!editMode}
-          />
+          <>
+            <EditorComponent
+              onChange={handleEditorChange}
+              initialData={formData.editorContent}
+              readMode={!editMode}
+            />
+
+            <div className="like__section">
+              <div
+                className="like__components"
+                style={{ backgroundColor: getBackgroundColor() }}
+              >
+                <button
+                  className="like-button like"
+                  title="Like"
+                  onClick={onLikeClicked}
+                >
+                  <FontAwesomeIcon icon={faCaretUp} />
+                </button>
+                <p className="like-count">
+                  <span>{note.likes}</span>
+                </p>
+                <button
+                  className="like-button dislike"
+                  title="Dislike"
+                  onClick={onDislikeClicked}
+                >
+                  <FontAwesomeIcon icon={faCaretDown} />
+                </button>
+              </div>
+            </div>
+          </>
         ) : (
           <p>Error loading note content. Please check console for details.</p>
         )}
-        <div className="form__row">
-          <div className="form__divider">
-            <label
-              className="form__label form__checkbox-container"
-              htmlFor="note-completed"
-            >
-              WORK COMPLETE:
-              <input
-                className="form__checkbox"
-                id="note-completed"
-                name="completed"
-                type="checkbox"
-                checked={formData.completed}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label
-              className="form__label form__checkbox-container"
-              htmlFor="note-username"
-            >
-              ASSIGNED TO:
-              <select
-                id="note-username"
-                name="userId"
-                className="form__select"
-                value={formData.userId}
-                onChange={handleInputChange}
-              >
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="form__divider">
-            <p className="form__created">
-              Created:
-              <br />
-              {formatDate(note.createdAt)}
-            </p>
-            <p className="form__updated">
-              Updated:
-              <br />
-              {formatDate(note.updatedAt)}
-            </p>
-          </div>
-        </div>
       </form>
     </>
   );

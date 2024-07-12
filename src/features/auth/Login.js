@@ -93,9 +93,12 @@ const Login = () => {
             value={password}
             required
           />
-          <button className="form__submit-button">Sign In</button>
 
-          <OAuth />
+          <div className="login-button-container">
+            <button className="login-button">Sign In</button>
+
+            <OAuth />
+          </div>
 
           <label htmlFor="persist" className="form__persist">
             <input

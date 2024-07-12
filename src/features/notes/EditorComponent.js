@@ -22,8 +22,6 @@ const EDITOR_JS_TOOLS = {
 const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef();
   const initialDataRef = useRef(initialData);
-  console.log("READMODE", readMode);
-
   const initEditor = useCallback(() => {
     const editor = new EditorJS({
       holder: "editorjs",

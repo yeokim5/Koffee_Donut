@@ -25,7 +25,8 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-simplemde-editor": "^5.2.0",
-    "react-spinners": "^0.13.4"
+    "react-spinners": "^0.13.4",
+    "react-toastify": "^10.0.5"
   },
   "scripts": {
     "start": "react-scripts start",

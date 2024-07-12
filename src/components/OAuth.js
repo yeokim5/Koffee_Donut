@@ -57,13 +57,14 @@ const OAuth = () => {
     <>
       <button
         type="button"
-        className="form__submit-button"
+        className="login-button"
         onClick={handleGoogleClick}
         disabled={isLoading}
       >
-        <img src={googleIcon} alt="Google logo" height={25} />
-        <span>Continue with Google</span>
+        <img src={googleIcon} alt="Google logo" height={25} />{" "}
+        <span style={{ marginLeft: "3px" }}>Continue with Google</span>
       </button>
+
       {error && <p className="error-message">{error}</p>}
     </>
   );

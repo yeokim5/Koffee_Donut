@@ -4,16 +4,20 @@ import { useAddNewNoteMutation } from "./notesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import EditorComponent from "./EditorComponent";
+import useAuth from "../../hooks/useAuth";
 
 const NewNoteForm = ({ users }) => {
   const [addNewNote, { isLoading, isSuccess, isError, error }] =
     useAddNewNoteMutation();
 
+  const { username } = useAuth();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [editorContent, setEditorContent] = useState(null);
   const [userId, setUserId] = useState(users[0]?.id || "");
+
+  const user = users.find((user) => user.username === username);
 
   useEffect(() => {
     if (isSuccess) {
@@ -25,7 +29,6 @@ const NewNoteForm = ({ users }) => {
   }, [isSuccess, navigate]);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
-  const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const handleEditorChange = useCallback((content) => {
     setEditorContent(content);
@@ -37,7 +40,7 @@ const NewNoteForm = ({ users }) => {
     e.preventDefault();
     if (canSave) {
       await addNewNote({
-        user: userId,
+        user: user.id,
         title,
         text: JSON.stringify(editorContent),
       });
@@ -66,7 +69,7 @@ const NewNoteForm = ({ users }) => {
           </div>
         </div>
         <label className="form__label" htmlFor="title">
-          Title:
+          Title
         </label>
         <input
           className={`form__input ${validTitleClass}`}
@@ -81,21 +84,6 @@ const NewNoteForm = ({ users }) => {
           Content:
         </label>
         <EditorComponent onChange={handleEditorChange} />
-        <label
-          className="form__label form__checkbox-container"
-          htmlFor="username"
-        >
-          ASSIGNED TO:
-        </label>
-        <select
-          id="username"
-          name="username"
-          className="form__select"
-          value={userId}
-          onChange={onUserIdChanged}
-        >
-          {options}
-        </select>
       </form>
     </>
   );

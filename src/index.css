@@ -52,6 +52,33 @@
   color: var(--COLOR);
   display: grid;
   place-content: center;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  /* Existing styles */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button svg {
+  font-size: 1.2rem;
+}
+
+.form__action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.form__title-row {
+  position: relative;
+  padding-top: 2.5rem;
 }
 
 .icon-button:hover,
@@ -253,95 +280,145 @@ tr {
   color: var(--STATUS-COMPLETE);
 }
 
-/* || FORM - GENERAL */
-
 .form {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.75em;
   max-width: 800px;
-}
-
-.form__checkbox-container {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  gap: 0.5em;
-}
-
-.form__persist {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 0.5em;
+  min-height: 400px; /* Fixed height */
+  width: auto;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: auto; /* Ensure the form can scroll if the content overflows */
 }
 
 .form__title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-.form__input,
-.form__submit-button {
-  padding: 0.5em;
-  border-radius: 15px;
-}
-
-.form__submit-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  cursor: pointer;
-}
-
-.form__submit-button img {
-  margin-right: 8px;
-}
-
-.form__submit-button span {
-  font-size: 17px;
-}
-
-.form__input--text {
-  min-height: 150px;
-}
-
-.form__input--incomplete {
-  border: 1px solid var(--INPUT-INVALID);
-  outline: 1px solid var(--INPUT-INVALID);
-}
-
-.form__checkbox {
-  width: 24px;
-  height: 24px;
-}
-
-.form__select {
-  width: fit-content;
-  padding: 0.25em;
+.form__title-row h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
 }
 
 .form__action-buttons {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.5em;
+  gap: 0.5rem;
   position: absolute;
-  right: 0.5em;
+  top: 0.5rem;
+  right: 0.5rem;
 }
 
-.form__row {
-  display: flex;
-  flex-flow: row nowrap;
-  gap: 2em;
+.form__label {
+  display: block;
+  margin: 1rem 1rem 1rem 0;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
 }
 
-.form__divider {
+.form h3 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form__input--incomplete {
+  border-color: #e74c3c;
+}
+
+.icon-button {
+  background-color: #d1ddeb;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.5em;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button:hover:not(:disabled) {
+  background-color: #868c94;
+}
+
+.icon-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.editor-container {
+  margin-top: 1rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+}
+
+.errmsg {
+  background-color: #fdecea;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 600px) {
+  .form {
+    padding: 1rem;
+  }
+
+  .form__title-row h2 {
+    font-size: 1.5rem;
+  }
+
+  .icon-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Styles for the container of the login button */
+.login-button-container {
+  border: 2px blue solid;
+  display: flex;
+  align-content: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+}
+
+/* Styles for the login button */
+.login-button {
+  padding: 0.5rem; /* Increase padding to make the button larger */
+  margin: 0.3rem;
+  width: 60%; /* Increase width to make the button wider */
+}
+
+.login-button:hover {
+  background-color: #45a049; /* Darker green when hovering */
 }
 
 .header_logo {
@@ -423,8 +500,65 @@ tr {
   .note__username {
     display: block;
   }
+}
 
-  .form__action-buttons {
-    position: static;
-  }
+.like__section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.like__components {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 3px rgb(240, 223, 223) solid;
+}
+
+.like-button {
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px; /* Adjusted padding for a smaller button */
+  margin: 0 5px; /* Reduced margin for closer spacing */
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  font-size: 1rem; /* Adjusted font size for smaller text */
+}
+
+.like-button.like {
+  background-color: rgb(0, 174, 255);
+}
+
+.like-button.like.active {
+  background-color: rgb(0, 140, 200); /* Example active color */
+}
+
+.like-button.like:disabled {
+  background-color: #0056b3; /* Example darker background color */
+}
+
+.like-button.dislike {
+  background-color: rgb(254, 73, 73); /* Red color */
+}
+
+.like-button.dislike.active {
+  background-color: rgb(200, 40, 40); /* Example active color */
+}
+
+.like-button.dislike:disabled {
+  background-color: #f80d0d; /* Example darker background color for disabled state */
+}
+
+.like-count {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 20px;
 }

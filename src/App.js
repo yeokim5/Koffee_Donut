@@ -15,9 +15,13 @@ import PersistLogin from "./features/auth/PersistLogin";
 import RequireAuth from "./features/auth/RequireAuth";
 import { ROLES } from "./config/roles";
 import useTitle from "./hooks/useTitle";
+import { ToastContainer, toast } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   useTitle("Dan D. Repairs");
+  <ToastContainer />;
 
   return (
     <Routes>
