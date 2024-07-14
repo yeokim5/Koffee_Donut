@@ -11,10 +11,12 @@ const initialState = notesAdapter.getInitialState();
 export const notesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNotes: builder.query({
-      query: () => "/notes",
-      validateStatus: (response, result) => {
-        return response.status === 200 && !result.isError;
-      },
+      query: () => ({
+        url: "/notes",
+        validateStatus: (response, result) => {
+          return response.status === 200 && !result.isError;
+        },
+      }),
       transformResponse: (responseData) => {
         const loadedNotes = responseData.map((note) => {
           note.id = note._id;
@@ -59,6 +61,30 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
     }),
+    likeNote: builder.mutation({
+      query: ({ id, userId }) => ({
+        url: `/notes/${id}/like`,
+        method: "PATCH",
+        body: { userId },
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+    }),
+    undoLikeNote: builder.mutation({
+      query: ({ id, userId }) => ({
+        url: `/notes/${id}/like`,
+        method: "PATCH",
+        body: { userId },
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+    }),
+    dislikeNote: builder.mutation({
+      query: ({ id, userId }) => ({
+        url: `/notes/${id}/dislike`,
+        method: "PATCH",
+        body: { userId },
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+    }),
   }),
 });
 
@@ -67,7 +93,12 @@ export const {
   useAddNewNoteMutation,
   useUpdateNoteMutation,
   useDeleteNoteMutation,
+  useLikeNoteMutation,
+  useUndoLikeNoteMutation,
+  useDislikeNoteMutation,
 } = notesApiSlice;
+
+// ... rest of the code remains the same
 
 // returns the query result object
 export const selectNotesResult = notesApiSlice.endpoints.getNotes.select();

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
 
 * {
   margin: 0;
@@ -10,19 +10,19 @@
 
 :root {
   /* COLORS */
-  --BGCOLOR: #0F172A;
-  --BORDER-COLOR: #FFF;
-  --COLOR: #FFF;
+  --BGCOLOR: #fff8e7;
+  --BORDER-COLOR: black;
+  --COLOR: black;
   --ERROR: firebrick;
   --INACTIVE: lightgray;
-  --LINK-COLOR: whitesmoke;
-  --LINK-HOVER: rgba(245, 245, 245, 0.9);
+  --LINK-COLOR: black;
+  --LINK-HOVER: rgba(172, 82, 82, 0.9);
   --NOTE-BGCOLOR: hsla(240, 64%, 27%, 0.65);
   --STATUS-COMPLETE: limegreen;
   --STATUS-OPEN: firebrick;
-  --TABLE-BGCOLOR: #FFF;
-  --TABLE-COLOR: #000;
-  --INPUT-INVALID: #F00;
+  --TABLE-BGCOLOR: rgb(241, 231, 231);
+  --TABLE-COLOR: rgb(0, 0, 0);
+  --INPUT-INVALID: #f00;
 }
 
 /* || UTILITY CLASSES */
@@ -32,6 +32,11 @@
   color: var(--ERROR);
   padding: 0.25em;
   margin-bottom: 0.5em;
+}
+
+.errmsg a:any-link {
+  color: var(--ERROR);
+  text-decoration: underline;
 }
 
 .nowrap {
@@ -47,6 +52,33 @@
   color: var(--COLOR);
   display: grid;
   place-content: center;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  /* Existing styles */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button svg {
+  font-size: 1.2rem;
+}
+
+.form__action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.form__title-row {
+  position: relative;
+  padding-top: 2.5rem;
 }
 
 .icon-button:hover,
@@ -61,11 +93,10 @@
 /* || GENERAL STYLES */
 
 body {
-  font-family: 'Nunito', sans-serif;
+  font-family: "Merriweather", sans-serif;
   min-height: 100vh;
   background-color: var(--BGCOLOR);
   color: var(--COLOR);
-  /* background-image: url('./img/background.jpg'); */
   background-size: cover;
   background-position: top right;
   background-blend-mode: multiply;
@@ -89,8 +120,7 @@ a {
   text-decoration: none;
 }
 
-a,
-a:visited {
+a:any-link {
   color: var(--LINK-COLOR);
 }
 
@@ -126,7 +156,7 @@ a:focus-visible {
 }
 
 .welcome a::before {
-  content: "➜ "
+  content: "➜ ";
 }
 
 /* || DASH HEADER, CONTAINER & FOOTER */
@@ -140,15 +170,16 @@ a:focus-visible {
   border-bottom: 1px solid var(--BORDER-COLOR);
 }
 
+.dash-header__title {
+  width: 9%;
+  margin: 10px;
+}
+
 .dash-header__container {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-}
-
-.dash-header__container--small {
-  max-width: 800px;
 }
 
 .dash-header__nav {
@@ -185,6 +216,13 @@ a:focus-visible {
 
 /* || TABLES - GENERAL */
 
+/* Styles for centering the table */
+.table__container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
 thead,
 tbody,
 tr {
@@ -193,11 +231,10 @@ tr {
 
 .table {
   font-size: 1rem;
-  width: 100%;
+  width: 80%;
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   color: var(--TABLE-COLOR);
-  gap: 0.1em;
 }
 
 .table__button {
@@ -216,7 +253,6 @@ tr {
 .table__cell {
   background-color: var(--TABLE-BGCOLOR);
   text-align: left;
-  border: 1px solid var(--TABLE-COLOR);
   padding: 0.5em;
 }
 
@@ -249,80 +285,176 @@ tr {
   color: var(--STATUS-COMPLETE);
 }
 
-
-/* || FORM - GENERAL */
-
 .form {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.75em;
   max-width: 800px;
-}
-
-.form__checkbox-container {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  gap: 0.5em;
-}
-
-.form__persist {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 0.5em;
+  min-height: 400px; /* Fixed height */
+  width: auto;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: auto; /* Ensure the form can scroll if the content overflows */
 }
 
 .form__title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-.form__input,
-.form__submit-button {
-  padding: 0.5em;
-  border-radius: 15px;
-}
-
-.form__input--text {
-  min-height: 150px;
-}
-
-.form__input--incomplete {
-  border: 1px solid var(--INPUT-INVALID);
-  outline: 1px solid var(--INPUT-INVALID);
-}
-
-.form__checkbox {
-  width: 24px;
-  height: 24px;
-}
-
-.form__select {
-  width: fit-content;
-  padding: 0.25em;
+.form__title-row h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
 }
 
 .form__action-buttons {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.5em;
+  gap: 0.5rem;
   position: absolute;
-  right: 0.5em;
+  top: 0.5rem;
+  right: 0.5rem;
 }
 
-.form__row {
-  display: flex;
-  flex-flow: row nowrap;
-  gap: 2em;
+.form__label {
+  display: block;
+  margin: 1rem 1rem 1rem 0;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
 }
 
-.form__divider {
+.form h3 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form__input--incomplete {
+  border-color: #e74c3c;
+}
+
+.icon-button {
+  background-color: #d1ddeb;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.5em;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button:hover:not(:disabled) {
+  background-color: #868c94;
+}
+
+.icon-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.editor-container {
+  margin-top: 1rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+}
+
+.errmsg {
+  background-color: #fdecea;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 600px) {
+  .form {
+    padding: 1rem;
+  }
+
+  .form__title-row h2 {
+    font-size: 1.5rem;
+  }
+
+  .icon-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Styles for the container of the login button */
+.login-button-container {
+  border: 2px blue solid;
+  display: flex;
+  align-content: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+}
+
+/* Styles for the login button */
+.login-button {
+  padding: 0.5rem; /* Increase padding to make the button larger */
+  margin: 0.3rem;
+  width: 60%; /* Increase width to make the button wider */
+}
+
+.login-button:hover {
+  background-color: #45a049; /* Darker green when hovering */
+}
+
+.header_logo {
+  width: 70px; /* Adjust the width as needed */
+  height: auto; /* Ensures the logo scales proportionally */
+  display: block; /* Ensures it behaves as a block element */
+  margin: 0; /* Resets margin */
+  padding: 0; /* Resets padding */
+  background-size: contain; /* Ensures the image fits within the element */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
+  background-position: center center; /* Centers the image within the element */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.header_logo:hover {
+  transform: scale(1.05); /* Slightly increase the size on hover */
+  filter: drop-shadow(
+    0 0 10px rgba(255, 255, 255, 0.7)
+  ); /* Add a white glow effect */
+}
+
+/* If your logo is an image, use this instead of background properties */
+.header_logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.editor-container {
+  background-color: white;
+  font-size: 15px;
 }
 
 @media screen and (max-width: 400px) {
@@ -337,11 +469,13 @@ tr {
   .icon-button {
     font-size: 1.5rem;
   }
+
+  .dash-header__title {
+    width: 20%;
+  }
 }
 
-
 @media screen and (min-width: 768px) {
-
   body {
     font-size: 1.25rem;
   }
@@ -365,10 +499,219 @@ tr {
   .note__created,
   .note__updated,
   .note__username {
-    display: block
+    display: block;
   }
+}
 
-  .form__action-buttons {
-    position: static;
+.like__section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.like__components {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 3px rgb(240, 223, 223) solid;
+}
+
+.like-button {
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px; /* Adjusted padding for a smaller button */
+  margin: 0 5px; /* Reduced margin for closer spacing */
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  font-size: 1rem; /* Adjusted font size for smaller text */
+}
+
+.like-button.like {
+  background-color: rgb(0, 174, 255);
+}
+
+.like-button.like.active {
+  background-color: rgb(0, 140, 200); /* Example active color */
+}
+
+.like-button.like:disabled {
+  background-color: #0056b3; /* Example darker background color */
+}
+
+.like-button.dislike {
+  background-color: rgb(254, 73, 73); /* Red color */
+}
+
+.like-button.dislike.active {
+  background-color: rgb(200, 40, 40); /* Example active color */
+}
+
+.like-button.dislike:disabled {
+  background-color: #f80d0d; /* Example darker background color for disabled state */
+}
+
+.like-count {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 20px;
+}
+
+/* NOTE CSS */
+
+.note-list-container {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  margin: 0 auto; /* Centers the container horizontally */
+}
+
+@media (max-width: 768px) {
+  .note-list-container {
+    width: 100%; /* Full width on smaller screens */
+    margin: 0; /* Removes the auto margin */
   }
+}
+
+.note-item {
+  display: flex;
+  flex-direction: row;
+  border-radius: 5px;
+  transition: box-shadow 0.3s ease;
+  padding: 5px;
+  border-top: 1px solid rgb(166, 216, 236);
+}
+
+.note-image-container {
+  display: flex;
+  margin-right: 15px;
+  width: 70px;
+  height: 50px;
+}
+
+.note-image {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.note-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.note-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-title a {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+
+.note-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.note-username,
+.note-updated {
+  font-size: 0.9rem;
+}
+
+.list-like {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.4rem;
+  cursor: pointer; /* Make the entire like section clickable */
+  width: 70px;
+  color: #278cff;
+}
+
+.list-like .fa-caret-up {
+  margin-bottom: 3px; /* Space between caret and like count */
+}
+
+@media (max-width: 768px) {
+  .note-title a {
+    font-size: 1.2rem; /* Adjusted font size for smaller screens */
+  }
+  .list-like {
+    padding-top: 8px;
+    font-size: 1.1rem;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #b1cdf3;
+  color: white;
+  border: none;
+  padding: 8px 13px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.pagination button:disabled {
+  background-color: #ff7171;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 14px;
+}
+
+/* Styles for the view selector buttons */
+.view-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.view-selector button {
+  background-color: #b1cdf3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.view-selector button:hover {
+  background-color: #868c94;
+}
+
+.view-selector button.active {
+  background-color: #4a90e2;
+  font-weight: bold;
+}
+
+.view-selector button:focus {
+  outline: none;
+  transform: scale(1.1);
 }
