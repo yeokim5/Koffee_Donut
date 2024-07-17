@@ -13,7 +13,11 @@ const EDITOR_JS_TOOLS = {
     config: {
       services: {
         youtube: true,
-        instagram: true,
+        instagram: {
+          regex: /https?:\/\/www\.instagram\.com\/p\/([^\/\?\&]+)\/?.*/,
+          embedUrl: "https://www.instagram.com/p/<%= remote_id %>/embed",
+          html: '<iframe width="400" height="505" style="margin: 0 auto;" frameborder="0" scrolling="no" allowtransparency="true"></iframe>',
+        },
         facebook: true,
         twitter: true,
       },

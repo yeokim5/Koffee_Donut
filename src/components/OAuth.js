@@ -38,7 +38,7 @@ const OAuth = () => {
 
       dispatch(setCredentials({ accessToken }));
 
-      navigate("/dash");
+      navigate("/");
     } catch (error) {
       console.error("Error during Google authentication:", error);
       setError(
@@ -61,8 +61,15 @@ const OAuth = () => {
         onClick={handleGoogleClick}
         disabled={isLoading}
       >
-        <img src={googleIcon} alt="Google logo" height={25} />{" "}
-        <span style={{ marginLeft: "3px" }}>Continue with Google</span>
+        <img
+          src={googleIcon}
+          className="google-icon"
+          alt="Google logo"
+          height={25}
+        />{" "}
+        <span style={{ marginLeft: "10px", fontSize: "0.9rem" }}>
+          Continue with Google
+        </span>
       </button>
 
       {error && <p className="error-message">{error}</p>}

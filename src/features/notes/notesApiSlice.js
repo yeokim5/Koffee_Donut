@@ -69,14 +69,7 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
     }),
-    undoLikeNote: builder.mutation({
-      query: ({ id, userId }) => ({
-        url: `/notes/${id}/like`,
-        method: "PATCH",
-        body: { userId },
-      }),
-      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
-    }),
+
     dislikeNote: builder.mutation({
       query: ({ id, userId }) => ({
         url: `/notes/${id}/dislike`,
@@ -94,27 +87,24 @@ export const {
   useUpdateNoteMutation,
   useDeleteNoteMutation,
   useLikeNoteMutation,
-  useUndoLikeNoteMutation,
   useDislikeNoteMutation,
 } = notesApiSlice;
 
-// ... rest of the code remains the same
+// // returns the query result object
+// export const selectNotesResult = notesApiSlice.endpoints.getNotes.select();
 
-// returns the query result object
-export const selectNotesResult = notesApiSlice.endpoints.getNotes.select();
+// // creates memoized selector
+// const selectNotesData = createSelector(
+//   selectNotesResult,
+//   (notesResult) => notesResult.data // normalized state object with ids & entities
+// );
 
-// creates memoized selector
-const selectNotesData = createSelector(
-  selectNotesResult,
-  (notesResult) => notesResult.data // normalized state object with ids & entities
-);
-
-//getSelectors creates these selectors and we rename them with aliases using destructuring
-export const {
-  selectAll: selectAllNotes,
-  selectById: selectNoteById,
-  selectIds: selectNoteIds,
-  // Pass in a selector that returns the notes slice of state
-} = notesAdapter.getSelectors(
-  (state) => selectNotesData(state) ?? initialState
-);
+// //getSelectors creates these selectors and we rename them with aliases using destructuring
+// export const {
+//   selectAll: selectAllNotes,
+//   selectById: selectNoteById,
+//   selectIds: selectNoteIds,
+//   // Pass in a selector that returns the notes slice of state
+// } = notesAdapter.getSelectors(
+//   (state) => selectNotesData(state) ?? initialState
+// );

@@ -5,12 +5,13 @@ import {
   faFilePen,
   faUserGear,
   faUserPlus,
-  faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useSendLogoutMutation } from "../features/auth/authApiSlice";
 import useAuth from "../hooks/useAuth";
 import PulseLoader from "react-spinners/PulseLoader";
+import { CiLogout } from "react-icons/ci";
+import { IoIosLogIn } from "react-icons/io";
 
 // Import the logo image
 import logo from "../img/logo.png";
@@ -20,7 +21,8 @@ const NOTES_REGEX = /^\/dash\/notes(\/)?$/;
 const USERS_REGEX = /^\/dash\/users(\/)?$/;
 
 const DashHeader = () => {
-  const { isManager, isAdmin } = useAuth();
+  const { isManager, isAdmin, isAuthenticated } = useAuth();
+  console.log("isAuthenticated : ", isAuthenticated);
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -40,17 +42,11 @@ const DashHeader = () => {
   let dashClass = null;
 
   let newNoteButton = null;
-  if (NOTES_REGEX.test(pathname)) {
-    newNoteButton = (
-      <button
-        className="icon-button"
-        title="New Note"
-        onClick={onNewNoteClicked}
-      >
-        <FontAwesomeIcon icon={faFileCirclePlus} />
-      </button>
-    );
-  }
+  newNoteButton = (
+    <button className="icon-button" title="New Note" onClick={onNewNoteClicked}>
+      <FontAwesomeIcon icon={faFileCirclePlus} />
+    </button>
+  );
 
   let newUserButton = null;
   if (USERS_REGEX.test(pathname)) {
@@ -87,8 +83,14 @@ const DashHeader = () => {
 
   const logoutButton = (
     <button className="icon-button" title="Logout" onClick={sendLogout}>
-      <FontAwesomeIcon icon={faRightFromBracket} />
+      <CiLogout />
     </button>
+  );
+
+  const loginButton = (
+    <Link to="/login" className="icon-button" title="Login">
+      <IoIosLogIn />
+    </Link>
   );
 
   const errClass = isError ? "errmsg" : "offscreen";
@@ -97,14 +99,16 @@ const DashHeader = () => {
   if (isLoading) {
     buttonContent = <PulseLoader color={"#FFF"} />;
   } else {
-    buttonContent = (
+    buttonContent = isAuthenticated ? (
       <>
         {newNoteButton}
-        {newUserButton}
-        {notesButton}
-        {userButton}
+        {/* {newUserButton} */}
+        {/* {notesButton} */}
+        {/* {userButton} */}
         {logoutButton}
       </>
+    ) : (
+      loginButton
     );
   }
 
@@ -114,7 +118,7 @@ const DashHeader = () => {
 
       <header className="dash-header">
         <div className={`dash-header__container ${dashClass}`}>
-          <Link to="/dash" className="dash-header__title">
+          <Link to="/" className="dash-header__title">
             <img src={logo} className="header_logo" alt="Logo" />
           </Link>
           <nav className="dash-header__nav">{buttonContent}</nav>

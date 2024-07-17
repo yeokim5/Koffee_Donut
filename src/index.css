@@ -163,15 +163,15 @@ a:focus-visible {
 
 .dash-header {
   position: sticky;
-  top: 0;
-  z-index: 1;
+  top: -2px;
+  z-index: 2;
   background-color: var(--BGCOLOR);
   padding: 0 0.5em;
   border-bottom: 1px solid var(--BORDER-COLOR);
 }
 
 .dash-header__title {
-  width: 9%;
+  width: 90px;
   margin: 10px;
 }
 
@@ -357,6 +357,7 @@ tr {
   border: none;
   border-radius: 4px;
   padding: 0.5rem 1rem;
+  margin-left: 1rem;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -406,10 +407,9 @@ tr {
 
 /* Styles for the container of the login button */
 .login-button-container {
-  border: 2px blue solid;
   display: flex;
-  align-content: center;
   flex-direction: column;
+  align-content: center;
   justify-content: center;
   align-items: center;
   margin: 1rem;
@@ -417,17 +417,26 @@ tr {
 
 /* Styles for the login button */
 .login-button {
+  border-radius: 5px;
   padding: 0.5rem; /* Increase padding to make the button larger */
   margin: 0.3rem;
-  width: 60%; /* Increase width to make the button wider */
+  width: 40%; /* Increase width to make the button wider */
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffc3bf;
+  border: none;
+  cursor: pointer;
 }
 
-.login-button:hover {
-  background-color: #45a049; /* Darker green when hovering */
+.login-button img {
+  height: 30px;
+  width: 30px;
 }
 
 .header_logo {
-  width: 70px; /* Adjust the width as needed */
+  width: 100%;
   height: auto; /* Ensures the logo scales proportionally */
   display: block; /* Ensures it behaves as a block element */
   margin: 0; /* Resets margin */
@@ -452,12 +461,33 @@ tr {
   display: block;
 }
 
-.editor-container {
-  background-color: white;
-  font-size: 15px;
+.embed-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
-@media screen and (max-width: 400px) {
+.embed-tool__content {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.embed-tool__content[src*="instagram.com"] {
+  height: 980px;
+}
+
+@media screen and (max-width: 768px) {
+  .embed-tool__content[src*="instagram.com"] {
+    height: 640px;
+  }
+}
+
+.embed-tool__caption {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
   h1 {
     font-size: 2rem;
   }
@@ -471,7 +501,10 @@ tr {
   }
 
   .dash-header__title {
-    width: 20%;
+    width: 70px;
+  }
+  .login-button {
+    width: 80%;
   }
 }
 
@@ -563,9 +596,7 @@ tr {
   font-weight: bold;
   margin: 0 20px;
 }
-
 /* NOTE CSS */
-
 .note-list-container {
   display: flex;
   flex-direction: column;
@@ -592,12 +623,15 @@ tr {
 .note-image-container {
   display: flex;
   margin-right: 15px;
-  width: 70px;
+  min-width: 70px; /* Change width to min-width */
   height: 50px;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .note-image {
   width: 100%;
+  height: 100%;
+  display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
@@ -614,12 +648,15 @@ tr {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* Allow content to shrink */
 }
 
 .note-title a {
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1rem;
   text-decoration: none;
+  word-wrap: break-word; /* Allow long words to break */
+  overflow-wrap: break-word;
 }
 
 .note-details {
@@ -640,6 +677,7 @@ tr {
   cursor: pointer; /* Make the entire like section clickable */
   width: 70px;
   color: #278cff;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .list-like .fa-caret-up {
@@ -648,7 +686,7 @@ tr {
 
 @media (max-width: 768px) {
   .note-title a {
-    font-size: 1.2rem; /* Adjusted font size for smaller screens */
+    font-size: 1rem; /* Adjusted font size for smaller screens */
   }
   .list-like {
     padding-top: 8px;
@@ -714,4 +752,120 @@ tr {
 .view-selector button:focus {
   outline: none;
   transform: scale(1.1);
+}
+
+/* ACCOUNT CSS */
+
+/* Existing CSS remains the same */
+/* Account Page Styles */
+.followButton {
+  width: 150px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.followButton.follow {
+  background-color: #d8e8ff;
+}
+
+.followButton.unfollow {
+  background-color: #ffd2d2;
+}
+
+.account-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--BGCOLOR);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.account-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.account-header h1 {
+  font-size: 2.5rem;
+  color: var(--COLOR);
+  margin-bottom: 0.5rem;
+}
+
+.account-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-bottom: 30px;
+  gap: 2rem;
+}
+
+.account-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.account-section h2 {
+  font-size: 1.5rem;
+  color: var(--COLOR);
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--BORDER-COLOR);
+  padding-bottom: 0.5rem;
+}
+
+.account-list {
+  list-style-type: none;
+  padding: 0;
+  max-height: 200px; /* Fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.account-list-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--INACTIVE);
+}
+
+.account-list-item:last-child {
+  border-bottom: none;
+}
+
+.account-list-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 1rem;
+}
+
+.account-list-item span {
+  font-size: 1rem;
+  color: var(--COLOR);
+}
+
+/* Styling the scrollbar for webkit browsers */
+.account-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.account-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.account-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.account-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media screen and (max-width: 768px) {
+  .account-sections {
+    grid-template-columns: 1fr;
+  }
 }

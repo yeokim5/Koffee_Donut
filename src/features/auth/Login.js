@@ -38,7 +38,7 @@ const Login = () => {
       dispatch(setCredentials({ accessToken }));
       setUsername("");
       setPassword("");
-      navigate("/dash");
+      navigate("/");
     } catch (err) {
       if (!err.status) {
         setErrMsg("No Server Response");
@@ -93,28 +93,25 @@ const Login = () => {
             value={password}
             required
           />
-
-          <div className="login-button-container">
-            <button className="login-button">Sign In</button>
-
-            <OAuth />
-          </div>
-
           <label htmlFor="persist" className="form__persist">
             <input
               type="checkbox"
               className="form__checkbox"
               id="persist"
               onChange={handleToggle}
-              checked={persist}
+              checked={!persist} // Bind checked to state
+              style={{ margin: "20px", padding: "10px", fontSize: "0.6rem" }}
             />
             Trust This Device
           </label>
+
+          <div className="login-button-container">
+            <button className="login-button">Sign In</button>
+
+            <OAuth />
+          </div>
         </form>
       </main>
-      <footer>
-        <Link to="/">Back to Home</Link>
-      </footer>
     </section>
   );
 

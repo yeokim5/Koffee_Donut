@@ -4,10 +4,8 @@ import {
   useDeleteNoteMutation,
   useLikeNoteMutation,
   useDislikeNoteMutation,
-  selectNoteById,
-  useGetNotesQuery,
 } from "./notesApiSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
@@ -18,6 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import EditorComponent from "./EditorComponent";
+import { useGetUsersQuery } from "../users/usersApiSlice";
 
 const EditNoteForm = ({ note, users }) => {
   const { username } = useAuth();
@@ -30,9 +29,19 @@ const EditNoteForm = ({ note, users }) => {
   const [likeNote] = useLikeNoteMutation();
   const [dislikeNote] = useDislikeNoteMutation();
   const navigate = useNavigate();
+  const { data: userData, isLoading: isUserDataLoading } = useGetUsersQuery();
 
   const user = users.find((user) => user.username === username);
-  const userId = user.id;
+  console.log(note.user);
+  console.log(userData);
+  const note_owner = useMemo(() => {
+    if (userData && userData.entities && note.user) {
+      return userData.entities[note.user] || { username: "Unknown User" };
+    }
+    return { username: "Unknown User" };
+  }, [userData, note.user]);
+
+  const userId = user?.id; // Use optional chaining to handle case when user is not found
   const [formData, setFormData] = useState({
     title: note.title,
     editorContent: JSON.parse(note.text),
@@ -68,16 +77,18 @@ const EditNoteForm = ({ note, users }) => {
     return (
       [formData.title, formData.editorContent, formData.userId].every(
         Boolean
-      ) && !isLoading
+      ) &&
+      !isLoading &&
+      userId // Add userId check here
     );
-  }, [formData, isLoading]);
+  }, [formData, isLoading, userId]);
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
       await updateNote({
         id: note.id,
-        user: user.id,
+        user: userId,
         title: formData.title,
         text: JSON.stringify(formData.editorContent),
         completed: formData.completed,
@@ -109,6 +120,11 @@ const EditNoteForm = ({ note, users }) => {
   const validTitleClass = !formData.title ? "form__input--incomplete" : "";
 
   const onLikeClicked = async () => {
+    if (!userId) {
+      alert("User need to Login");
+      return;
+    }
+
     const wasDisliked = disliked;
     setLiked(!liked);
     if (disliked) setDisliked(false);
@@ -128,6 +144,11 @@ const EditNoteForm = ({ note, users }) => {
   };
 
   const onDislikeClicked = async () => {
+    if (!userId) {
+      alert("User need to Login");
+      return;
+    }
+
     const wasLiked = liked;
     setDisliked(!disliked);
     if (liked) setLiked(false);
@@ -206,7 +227,18 @@ const EditNoteForm = ({ note, users }) => {
             </label>
           </>
         ) : (
-          <h3>{formData.title}</h3>
+          <>
+            <h3>{formData.title}</h3>
+            <h5>
+              {isUserDataLoading ? (
+                "Loading user data..."
+              ) : (
+                <Link to={`/dash/users/${note_owner.username}`}>
+                  {note_owner.username}
+                </Link>
+              )}
+            </h5>
+          </>
         )}
         {formData.editorContent ? (
           <>

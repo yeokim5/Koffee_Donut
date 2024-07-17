@@ -7,20 +7,31 @@ const useAuth = () => {
   let isManager = false;
   let isAdmin = false;
   let status = "Employee";
+  let username = "";
+  let roles = [];
 
   if (token) {
     const decoded = jwtDecode(token);
-    const { username, roles } = decoded.UserInfo;
+    const { username: decodedUsername, roles: decodedRoles } = decoded.UserInfo;
+
+    username = decodedUsername;
+    roles = decodedRoles;
 
     isManager = roles.includes("Manager");
     isAdmin = roles.includes("Admin");
 
     if (isManager) status = "Manager";
     if (isAdmin) status = "Admin";
-
-    return { username, roles, status, isManager, isAdmin };
   }
 
-  return { username: "", roles: [], isManager, isAdmin, status };
+  return {
+    username,
+    roles,
+    status,
+    isManager,
+    isAdmin,
+    isAuthenticated: Boolean(username),
+  };
 };
+
 export default useAuth;

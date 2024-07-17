@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,16 @@ const getRelativeTime = (date) => {
   return `${days} day${days !== 1 ? "s" : ""} ago`;
 };
 
+const shortenTitle = (title, maxLength = 38) => {
+  if (title.length <= maxLength) return title;
+  return title.substring(0, maxLength - 3) + "...";
+};
+
+const shortenUsername = (title, maxLength = 13) => {
+  if (title.length <= maxLength) return title;
+  return title.substring(0, maxLength - 3) + "...";
+};
+
 const Note = ({ noteId }) => {
   const { note } = useGetNotesQuery("notesList", {
     selectFromResult: ({ data }) => ({
@@ -24,14 +35,44 @@ const Note = ({ noteId }) => {
   });
 
   const navigate = useNavigate();
+  const [isVisited, setIsVisited] = useState(false);
+
+  useEffect(() => {
+    const visitedNotes = JSON.parse(
+      localStorage.getItem("visitedNotes") || "[]"
+    );
+    setIsVisited(visitedNotes.includes(noteId));
+
+    // Set a timeout to remove the note from localStorage after 10 seconds
+    const timer = setTimeout(() => {
+      const updatedNotes = visitedNotes.filter((id) => id !== noteId);
+      localStorage.setItem("visitedNotes", JSON.stringify(updatedNotes));
+    }, 10000);
+
+    // Clean up the timer on unmount
+    return () => clearTimeout(timer);
+  }, [noteId]);
+
+  const viewNote = () => {
+    navigate(`/dash/notes/${noteId}`);
+    const visitedNotes = JSON.parse(
+      localStorage.getItem("visitedNotes") || "[]"
+    );
+    if (!visitedNotes.includes(noteId)) {
+      visitedNotes.push(noteId);
+      localStorage.setItem("visitedNotes", JSON.stringify(visitedNotes));
+      setIsVisited(true);
+    }
+  };
+
+  const viewUserAccount = () =>
+    navigate(`/dash/users/${note.username}`, {
+      state: { username: note.username },
+    });
 
   if (note) {
     const createdDate = new Date(note.createdAt);
-    const updatedDate = new Date(note.updatedAt);
     const createdRelative = getRelativeTime(createdDate);
-    const updatedRelative = getRelativeTime(updatedDate);
-
-    const viewNote = () => navigate(`/dash/notes/${noteId}`);
 
     return (
       <div className="note-list-container">
@@ -48,13 +89,16 @@ const Note = ({ noteId }) => {
               />
             </div>
           </div>
-          <div className="note-content" onClick={viewNote}>
-            <div className="note-title">
-              <a>{note.title}</a>
+          <div className="note-content">
+            <div className={`note-title ${isVisited ? "visited" : ""}`}>
+              <a onClick={viewNote}>{shortenTitle(note.title)} </a>
             </div>
             <div className="note-details">
               <span className="note-username">
-                {createdRelative} / {note.username}
+                {createdRelative} /{" "}
+                <a onClick={viewUserAccount}>
+                  {shortenUsername(note.username)}
+                </a>
               </span>
             </div>
           </div>
