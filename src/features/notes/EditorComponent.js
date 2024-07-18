@@ -11,18 +11,64 @@ const EDITOR_JS_TOOLS = {
   image: {
     class: ImageTool,
     config: {
-      endpoints: {
-        byFile: "http://localhost:3500/upload", // Your backend file uploader endpoint
-        byUrl: "http://localhost:3500/getImage", // Your endpoint that provides uploading by Url
-      },
       uploader: {
         uploadByFile(file) {
-          return Promise.resolve({
-            success: 1,
-            file: {
-              url: url,
+          // Create a FormData instance
+          const formData = new FormData();
+          formData.append("image", file);
+
+          // Send the file to your server
+          return fetch("http://localhost:3500/upload", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              if (result.success === 0) {
+                throw new Error(result.error);
+              }
+              return {
+                success: 1,
+                file: {
+                  url: result.file.url,
+                },
+              };
+            })
+            .catch((error) => {
+              console.error("Error uploading image:", error);
+              return {
+                success: 0,
+                error: error.message || "Upload failed",
+              };
+            });
+        },
+        uploadByUrl(url) {
+          return fetch("http://localhost:3500/getImage", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          });
+            body: JSON.stringify({ url }),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              if (result.success === 0) {
+                throw new Error(result.error);
+              }
+              return {
+                success: 1,
+                file: {
+                  url: result.file.url,
+                },
+              };
+            })
+            .catch((error) => {
+              console.error("Error uploading image by URL:", error);
+              return {
+                success: 0,
+                error: error.message || "Upload failed",
+              };
+            });
         },
       },
     },
@@ -54,6 +100,7 @@ const EDITOR_JS_TOOLS = {
     },
   },
 };
+
 const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef();
   const initialDataRef = useRef(initialData);

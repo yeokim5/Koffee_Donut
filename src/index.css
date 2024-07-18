@@ -647,8 +647,8 @@ tr {
 .note-image-container {
   display: flex;
   margin-right: 15px;
-  min-width: 70px; /* Change width to min-width */
-  height: 50px;
+  width: 80px; /* Change width to min-width */
+  height: 60px;
   flex-shrink: 0; /* Prevent shrinking */
 }
 
@@ -665,7 +665,7 @@ tr {
 .note-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Ensures the image fits within the element while maintaining its aspect ratio */
 }
 
 .note-content {
@@ -1035,4 +1035,8 @@ tr {
 .embed-tool__content {
   /* width: 100%; */
   border: none;
+}
+
+.cdx-input.image-tool__caption {
+  display: none;
 }

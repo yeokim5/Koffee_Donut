@@ -93,7 +93,22 @@ const Note = ({ noteId, trending }) => {
       cursor: "pointer",
     };
 
-    // console.log(note.title, note.text);
+    function extractImageUrl(jsonString) {
+      // Parse the JSON string
+      const jsonObject = JSON.parse(jsonString);
+
+      // Iterate through the blocks array
+      for (let block of jsonObject.blocks) {
+        // Check if the block type is image
+        if (block.type === "image") {
+          // Return the URL
+          return block.data.file.url;
+        }
+      }
+
+      // If no image block is found, return null or an appropriate message
+      return null;
+    }
 
     return (
       <div className="note-list-container">
@@ -110,7 +125,10 @@ const Note = ({ noteId, trending }) => {
           <div className="note-image-container">
             <div className="note-image">
               <img
-                src="https://image.fmkorea.com/filesn/cache/thumbnails/20240713/095/771/245/007/70x50.crop.jpg?c=20240714002457"
+                src={
+                  extractImageUrl(note.text) ||
+                  "https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg"
+                }
                 alt="Note"
               />
             </div>

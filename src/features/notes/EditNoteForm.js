@@ -120,10 +120,45 @@ const EditNoteForm = ({ note, users }) => {
     }
   };
 
-  const onDeleteNoteClicked = async () => {
-    await deleteNote({ id: note.id });
-  };
+  const noteObject = formData;
+  const editorContent = noteObject.editorContent;
+  const blocks = editorContent.blocks;
 
+  const fileNames = blocks
+    .filter((block) => block.type === "image")
+    .map((block) => {
+      const url = block.data.file.url;
+      return url.split("/img/")[1];
+    });
+
+  const onDeleteNoteClicked = async () => {
+    try {
+      // First, delete the note
+      await deleteNote({ id: note.id }).unwrap();
+
+      // After successful note deletion, delete associated images if any exist
+      if (fileNames.length > 0) {
+        const response = await fetch(`http://localhost:3500/deleteImages`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fileNames }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to delete associated images:", errorData.error);
+        } else {
+          console.log("Associated images deleted successfully");
+        }
+      } else {
+        console.log("No associated images to delete");
+      }
+    } catch (err) {
+      console.error("Failed to delete note or images:", err);
+    }
+  };
   const toggleEditMode = useCallback(() => {
     setEditMode((prev) => !prev);
   }, []);
