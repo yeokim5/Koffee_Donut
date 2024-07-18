@@ -13,19 +13,29 @@ const EDITOR_JS_TOOLS = {
     config: {
       uploader: {
         uploadByFile(file) {
-          // Create a FormData instance
           const formData = new FormData();
-          formData.append("image", file);
+          formData.append("file", file);
 
-          // Send the file to your server
+          console.log("Uploading file:", file.name);
+
           return fetch("http://localhost:3500/upload", {
             method: "POST",
             body: formData,
           })
-            .then((response) => response.json())
+            .then(async (response) => {
+              if (!response.ok) {
+                const errorBody = await response.text();
+                console.error("Server error response:", errorBody);
+                throw new Error(
+                  `HTTP error! status: ${response.status}, body: ${errorBody}`
+                );
+              }
+              return response.json();
+            })
             .then((result) => {
+              console.log("Server success response:", result);
               if (result.success === 0) {
-                throw new Error(result.error);
+                throw new Error(result.error || "Upload failed");
               }
               return {
                 success: 1,
@@ -35,7 +45,7 @@ const EDITOR_JS_TOOLS = {
               };
             })
             .catch((error) => {
-              console.error("Error uploading image:", error);
+              console.error("Upload error:", error);
               return {
                 success: 0,
                 error: error.message || "Upload failed",
@@ -43,17 +53,27 @@ const EDITOR_JS_TOOLS = {
             });
         },
         uploadByUrl(url) {
-          return fetch("http://localhost:3500/getImage", {
+          return fetch("http://localhost:3500/upload", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ url }),
           })
-            .then((response) => response.json())
+            .then(async (response) => {
+              if (!response.ok) {
+                const errorBody = await response.text();
+                console.error("Server response:", errorBody);
+                throw new Error(
+                  `HTTP error! status: ${response.status}, body: ${errorBody}`
+                );
+              }
+              return response.json();
+            })
             .then((result) => {
+              console.log("Server response:", result);
               if (result.success === 0) {
-                throw new Error(result.error);
+                throw new Error(result.error || "Upload failed");
               }
               return {
                 success: 1,
@@ -63,7 +83,7 @@ const EDITOR_JS_TOOLS = {
               };
             })
             .catch((error) => {
-              console.error("Error uploading image by URL:", error);
+              console.error("Detailed error:", error);
               return {
                 success: 0,
                 error: error.message || "Upload failed",
@@ -116,6 +136,19 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       onChange: async () => {
         if (!readMode) {
           let content = await editor.saver.save();
+
+          // Check if the last block is a text block
+          const lastBlock = content.blocks[content.blocks.length - 1];
+          if (lastBlock.type !== "paragraph" || !lastBlock.data.text.trim()) {
+            // If not, add an empty text block
+            content.blocks.push({
+              type: "paragraph",
+              data: {
+                text: "",
+              },
+            });
+          }
+
           onChange(content);
         }
       },

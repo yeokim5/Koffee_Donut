@@ -198,7 +198,7 @@ a:focus-visible {
   font-size: 1rem;
   position: sticky;
   bottom: 0;
-  /* z-index: 1; */
+  z-index: 1;
   background-color: var(--BGCOLOR);
   padding: 0.5em;
   border-top: 1px solid var(--BORDER-COLOR);
@@ -206,6 +206,12 @@ a:focus-visible {
   flex-flow: row nowrap;
   justify-content: flex-start;
   gap: 1em;
+}
+
+@media only screen and (max-width: 768px) {
+  .ce-popover__container {
+    margin-bottom: 100px;
+  }
 }
 
 .dash-footer__button {
@@ -662,6 +668,12 @@ tr {
   border-radius: 5px;
 }
 
+.image-tool__caption {
+  visibility: hidden; /* Makes the element invisible */
+  height: 0; /* Collapses the height */
+  overflow: hidden; /* Ensures no content is displayed */
+  margin-bottom: -30px;
+}
 .note-image img {
   width: 100%;
   height: 100%;
@@ -1037,11 +1049,11 @@ tr {
   border: none;
 }
 
-.cdx-input.image-tool__caption {
-  display: none;
+.image-tool__caption {
+  visibility: hidden; /* Makes the element invisible */
+  height: 0; /* Collapses the height */
+  overflow: hidden; /* Ensures no content is displayed */
 }
-
-
 
 /* Sign Up page */
 /* NewUserForm Styles */
