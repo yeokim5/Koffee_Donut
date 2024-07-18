@@ -258,6 +258,11 @@ const EditNoteForm = ({ note, users }) => {
   );
 
   const handleAddComment = async () => {
+    if (!username) {
+      alert("User need to Login");
+      return;
+    }
+
     if (newCommentText.trim()) {
       try {
         const newComment = await addComment({

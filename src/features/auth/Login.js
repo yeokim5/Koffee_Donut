@@ -9,7 +9,7 @@ import PulseLoader from "react-spinners/PulseLoader";
 import OAuth from "../../components/OAuth";
 
 const Login = () => {
-  useTitle("Employee Login");
+  useTitle("Login");
 
   const userRef = useRef();
   const errRef = useRef();
@@ -93,6 +93,19 @@ const Login = () => {
             value={password}
             required
           />
+          <a
+            href="/dash/users/new"
+            style={{
+              float: "right",
+              marginTop: "10px",
+              fontSize: "15px",
+              border: "1px  black solid",
+              borderRadius: "10px",
+              padding: "5px",
+            }}
+          >
+            Create Account
+          </a>
           <label htmlFor="persist" className="form__persist">
             <input
               type="checkbox"

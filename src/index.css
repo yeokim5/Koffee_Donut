@@ -198,7 +198,7 @@ a:focus-visible {
   font-size: 1rem;
   position: sticky;
   bottom: 0;
-  z-index: 1;
+  /* z-index: 1; */
   background-color: var(--BGCOLOR);
   padding: 0.5em;
   border-top: 1px solid var(--BORDER-COLOR);
@@ -1039,4 +1039,103 @@ tr {
 
 .cdx-input.image-tool__caption {
   display: none;
+}
+
+
+
+/* Sign Up page */
+/* NewUserForm Styles */
+.new-user-form {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.new-user-form h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.new-user-form .form__label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.new-user-form .form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.new-user-form .form__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.new-user-form .form__input--incomplete {
+  border-color: #e74c3c;
+}
+
+.new-user-form .form__recaptcha {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.new-user-form .form__submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  background-color: #d1ddeb;
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.new-user-form .form__submit-button:hover:not(:disabled) {
+  background-color: #868c94;
+}
+
+.new-user-form .form__submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.new-user-form .errmsg {
+  background-color: #fdecea;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 600px) {
+  .new-user-form {
+    padding: 1rem;
+  }
+
+  .new-user-form h2 {
+    font-size: 1.5rem;
+  }
+
+  .new-user-form .form__submit-button {
+    font-size: 0.9rem;
+  }
 }

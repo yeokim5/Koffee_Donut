@@ -6,7 +6,7 @@ import NotesList from "../notes/NotesList";
 const Welcome = () => {
   const { username, isManager, isAdmin } = useAuth();
 
-  useTitle(`techNotes: ${username}`);
+  useTitle(`${username}`);
 
   const date = new Date();
   const today = new Intl.DateTimeFormat("en-US", {

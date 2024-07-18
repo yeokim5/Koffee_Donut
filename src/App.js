@@ -16,12 +16,14 @@ import RequireAuth from "./features/auth/RequireAuth";
 import { ROLES } from "./config/roles";
 import useTitle from "./hooks/useTitle";
 import { ToastContainer, toast } from "react-toastify";
-
 import "react-toastify/dist/ReactToastify.css";
 import UserAccount from "./features/users/UserAccount";
+import SetUsername from "./components/SetUsrename";
+import About from "./components/About";
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>;
 
 function App() {
-  useTitle("Dan D. Repairs");
+  useTitle("Koffee Donut");
   <ToastContainer />;
 
   return (
@@ -30,9 +32,12 @@ function App() {
         <Route path="/" element={<DashLayout />}>
           {/* public routes */}
           <Route index element={<Public />} />
+          <Route path="about" element={<About />} />
           <Route path="login" element={<Login />} />
           <Route path="dash/notes/:id" element={<EditNote />} />
           <Route path="dash/users/:username" element={<UserAccount />} />
+          <Route path="dash/users/new" element={<NewUserForm />} />
+          <Route path="/set-username" element={<SetUsername />} />
 
           {/* Protected Routes */}
           <Route

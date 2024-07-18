@@ -51,6 +51,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
+    setUsername: builder.mutation({
+      query: (credentials) => ({
+        url: "/auth/set-username",
+        method: "POST",
+        body: { ...credentials },
+      }),
+    }),
   }),
 });
 
@@ -59,4 +66,5 @@ export const {
   useSendLogoutMutation,
   useRefreshMutation,
   useGoogleLoginMutation,
+  useSetUsernameMutation,
 } = authApiSlice;

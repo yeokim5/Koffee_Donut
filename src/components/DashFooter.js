@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const DashFooter = () => {
@@ -37,6 +37,7 @@ const DashFooter = () => {
       ) : (
         <p>Current User: Not Logged In</p>
       )}
+      <Link to="/about">What is Koffee Donut?(Click)</Link>
     </footer>
   );
   return content;

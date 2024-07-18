@@ -1,4 +1,3 @@
-// OAuth.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -32,13 +31,22 @@ const OAuth = () => {
 
       console.log("Payload being sent to server:", payload);
 
-      const { accessToken } = await googleLogin(payload).unwrap();
+      const response = await googleLogin(payload).unwrap();
+      console.log("Received data from server:", response);
 
-      console.log("Received data from server:", { accessToken });
-
-      dispatch(setCredentials({ accessToken }));
-
-      navigate("/");
+      if (response.isFirstTimeUser) {
+        console.log("Redirecting to username setup...");
+        navigate("/set-username", {
+          state: {
+            email: resultFromGoogle.user.email,
+            tempToken: response.tempToken,
+          },
+        });
+      } else {
+        console.log("Logging in existing user...");
+        dispatch(setCredentials({ accessToken: response.accessToken }));
+        navigate("/");
+      }
     } catch (error) {
       console.error("Error during Google authentication:", error);
       setError(

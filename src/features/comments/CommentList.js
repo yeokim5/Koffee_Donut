@@ -15,6 +15,11 @@ const CommentList = ({ noteId }) => {
   const [newCommentText, setNewCommentText] = useState("");
 
   const handleAddComment = async () => {
+    if (!username) {
+      alert("User need to Login");
+      return;
+    }
+
     if (newCommentText.trim()) {
       await addComment({ noteId, text: newCommentText, username });
       setNewCommentText("");
