@@ -55,14 +55,32 @@ const NoteList = () => {
     if (isNotesSuccess) {
       const now = new Date();
       const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
-      return sortedNoteIds.filter((noteId) => {
-        const note = notes.entities[noteId];
-        const noteDate = new Date(note.createdAt);
-        return note.likes >= 1 && noteDate > twentyFourHoursAgo;
-      });
+      const recentPopularNotes = sortedNoteIds
+        .filter((noteId) => {
+          const note = notes.entities[noteId];
+          const noteDate = new Date(note.createdAt);
+          return noteDate > twentyFourHoursAgo;
+        })
+        .sort((a, b) => notes.entities[b].likes - notes.entities[a].likes)
+        .slice(0, 10);
+
+      // Randomly select 3 notes from the top 10
+      const selectedTrendingNotes = [];
+      while (
+        selectedTrendingNotes.length < 3 &&
+        recentPopularNotes.length > 0
+      ) {
+        const randomIndex = Math.floor(
+          Math.random() * recentPopularNotes.length
+        );
+        selectedTrendingNotes.push(
+          recentPopularNotes.splice(randomIndex, 1)[0]
+        );
+      }
+      return selectedTrendingNotes;
     }
     return [];
-  }, [isNotesSuccess, notes, sortedNoteIds]);
+  }, [isNotesSuccess, notes, sortedNoteIds, view]);
 
   const followingNoteIds = useMemo(() => {
     if (isNotesSuccess && isUsersSuccess && currentUser) {
@@ -136,7 +154,7 @@ const NoteList = () => {
             onClick={() => handleViewChange("trend")}
             className={view === "trend" ? "active" : ""}
           >
-            Trend
+            Trending
           </button>
           {username && (
             <button
@@ -147,6 +165,17 @@ const NoteList = () => {
             </button>
           )}
         </div>
+
+        {view === "recent" && (
+          <div className="trending-notes">
+            {trendingNoteIds.map((noteId) => (
+              <>
+                <Note key={noteId} noteId={noteId} trending={true} />
+              </>
+            ))}
+          </div>
+        )}
+
         <div className="note-list">
           {currentNoteIds.map((noteId) => (
             <Note key={noteId} noteId={noteId} />

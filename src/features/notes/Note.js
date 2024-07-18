@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowTrendUp,
+  faCaretUp,
+  faFire,
+} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useGetNotesQuery } from "./notesApiSlice";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 
 const getRelativeTime = (date) => {
   const now = new Date();
@@ -21,13 +24,36 @@ const shortenTitle = (title, maxLength = 38) => {
   if (title.length <= maxLength) return title;
   return title.substring(0, maxLength - 3) + "...";
 };
-
 const shortenUsername = (title, maxLength = 13) => {
   if (title.length <= maxLength) return title;
   return title.substring(0, maxLength - 3) + "...";
 };
 
-const Note = ({ noteId }) => {
+// Helper functions for cookie management
+const setCookie = (name, value, days) => {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = "expires=" + date.toUTCString();
+  document.cookie = name + "=" + value + ";" + expires + ";path=/";
+};
+
+const getCookie = (name) => {
+  const cookieName = name + "=";
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(";");
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i];
+    while (cookie.charAt(0) === " ") {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(cookieName) === 0) {
+      return cookie.substring(cookieName.length, cookie.length);
+    }
+  }
+  return "";
+};
+
+const Note = ({ noteId, trending }) => {
   const { note } = useGetNotesQuery("notesList", {
     selectFromResult: ({ data }) => ({
       note: data?.entities[noteId],
@@ -38,45 +64,45 @@ const Note = ({ noteId }) => {
   const [isVisited, setIsVisited] = useState(false);
 
   useEffect(() => {
-    const visitedNotes = JSON.parse(
-      localStorage.getItem("visitedNotes") || "[]"
-    );
+    const visitedNotes = getCookie("visitedNotes");
     setIsVisited(visitedNotes.includes(noteId));
-
-    // Set a timeout to remove the note from localStorage after 10 seconds
-    const timer = setTimeout(() => {
-      const updatedNotes = visitedNotes.filter((id) => id !== noteId);
-      localStorage.setItem("visitedNotes", JSON.stringify(updatedNotes));
-    }, 10000);
-
-    // Clean up the timer on unmount
-    return () => clearTimeout(timer);
   }, [noteId]);
-
-  const viewNote = () => {
-    navigate(`/dash/notes/${noteId}`);
-    const visitedNotes = JSON.parse(
-      localStorage.getItem("visitedNotes") || "[]"
-    );
-    if (!visitedNotes.includes(noteId)) {
-      visitedNotes.push(noteId);
-      localStorage.setItem("visitedNotes", JSON.stringify(visitedNotes));
-      setIsVisited(true);
-    }
-  };
-
-  const viewUserAccount = () =>
-    navigate(`/dash/users/${note.username}`, {
-      state: { username: note.username },
-    });
 
   if (note) {
     const createdDate = new Date(note.createdAt);
     const createdRelative = getRelativeTime(createdDate);
 
+    const viewNote = () => {
+      let visitedNotes = getCookie("visitedNotes");
+      if (!visitedNotes.includes(noteId)) {
+        visitedNotes += (visitedNotes ? "," : "") + noteId;
+        setCookie("visitedNotes", visitedNotes, 1); // Set cookie to expire in 1 day
+        setIsVisited(true);
+      }
+      navigate(`/dash/notes/${noteId}`);
+    };
+
+    const viewUserAccount = () =>
+      navigate(`/dash/users/${note.username}`, {
+        state: { username: note.username },
+      });
+
+    const linkStyle = {
+      color: isVisited ? "rgb(75, 178, 215)" : "black",
+      textDecoration: "none",
+      cursor: "pointer",
+    };
+
+    // console.log(note.title, note.text);
+
     return (
       <div className="note-list-container">
         <div className="note-item">
+          <div className="trending-section">
+            <div className="trending-icon">
+              {trending && <FontAwesomeIcon icon={faFire} />}
+            </div>
+          </div>
           <div className="list-like">
             <FontAwesomeIcon icon={faCaretUp} />
             {note.likes}
@@ -90,16 +116,18 @@ const Note = ({ noteId }) => {
             </div>
           </div>
           <div className="note-content">
-            <div className={`note-title ${isVisited ? "visited" : ""}`}>
-              <a onClick={viewNote}>{shortenTitle(note.title)} </a>
+            <div className="note-title">
+              <a onClick={viewNote} style={linkStyle}>
+                {shortenTitle(note.title)}
+              </a>
             </div>
             <div className="note-details">
-              <span className="note-username">
+              <div className="note-username">
                 {createdRelative} /{" "}
                 <a onClick={viewUserAccount}>
                   {shortenUsername(note.username)}
                 </a>
-              </span>
+              </div>
             </div>
           </div>
         </div>

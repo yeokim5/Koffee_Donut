@@ -5,6 +5,12 @@ import {
   useLikeNoteMutation,
   useDislikeNoteMutation,
 } from "./notesApiSlice";
+import {
+  useGetCommentsQuery,
+  useAddCommentMutation,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
+} from "../comments/commentApiSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,6 +23,8 @@ import {
 import useAuth from "../../hooks/useAuth";
 import EditorComponent from "./EditorComponent";
 import { useGetUsersQuery } from "../users/usersApiSlice";
+import Comment from "../comments/Comment";
+import { AlignCenter } from "lucide-react";
 
 const EditNoteForm = ({ note, users }) => {
   const { username } = useAuth();
@@ -32,8 +40,6 @@ const EditNoteForm = ({ note, users }) => {
   const { data: userData, isLoading: isUserDataLoading } = useGetUsersQuery();
 
   const user = users.find((user) => user.username === username);
-  console.log(note.user);
-  console.log(userData);
   const note_owner = useMemo(() => {
     if (userData && userData.entities && note.user) {
       return userData.entities[note.user] || { username: "Unknown User" };
@@ -41,7 +47,7 @@ const EditNoteForm = ({ note, users }) => {
     return { username: "Unknown User" };
   }, [userData, note.user]);
 
-  const userId = user?.id; // Use optional chaining to handle case when user is not found
+  const userId = user?.id;
   const [formData, setFormData] = useState({
     title: note.title,
     editorContent: JSON.parse(note.text),
@@ -53,11 +59,29 @@ const EditNoteForm = ({ note, users }) => {
   const [liked, setLiked] = useState(note.likedBy.includes(userId));
   const [disliked, setDisliked] = useState(note.dislikedBy.includes(userId));
   const [likeCount, setLikeCount] = useState(note.likes);
+  const { data: commentsData, isLoading: isLoadingComments } =
+    useGetCommentsQuery(note.id);
+  const [addComment] = useAddCommentMutation();
+  const [comments, setComments] = useState([]);
+  const [displayedComments, setDisplayedComments] = useState([]);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 3;
+
+  useEffect(() => {
+    if (commentsData) {
+      const sortedComments = [...commentsData].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setComments(sortedComments);
+      setDisplayedComments(sortedComments.slice(0, commentsPerPage));
+    }
+  }, [commentsData]);
 
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
       setFormData({ title: "", editorContent: null, userId: "" });
-      navigate("/dash/notes");
+      navigate("/");
     }
   }, [isSuccess, isDelSuccess, navigate]);
 
@@ -79,7 +103,7 @@ const EditNoteForm = ({ note, users }) => {
         Boolean
       ) &&
       !isLoading &&
-      userId // Add userId check here
+      userId
     );
   }, [formData, isLoading, userId]);
 
@@ -129,13 +153,11 @@ const EditNoteForm = ({ note, users }) => {
     setLiked(!liked);
     if (disliked) setDisliked(false);
 
-    // Optimistic update
     setLikeCount((prev) => prev + (liked ? -1 : 1) + (wasDisliked ? 1 : 0));
 
     try {
       await likeNote({ id: note.id, userId }).unwrap();
     } catch (err) {
-      // Revert optimistic update on error
       setLiked(liked);
       if (wasDisliked) setDisliked(true);
       setLikeCount(note.likes);
@@ -153,13 +175,11 @@ const EditNoteForm = ({ note, users }) => {
     setDisliked(!disliked);
     if (liked) setLiked(false);
 
-    // Optimistic update
     setLikeCount((prev) => prev - (disliked ? -1 : 1) - (wasLiked ? 1 : 0));
 
     try {
       await dislikeNote({ id: note.id, userId }).unwrap();
     } catch (err) {
-      // Revert optimistic update on error
       setDisliked(disliked);
       if (wasLiked) setLiked(true);
       setLikeCount(note.likes);
@@ -201,6 +221,78 @@ const EditNoteForm = ({ note, users }) => {
       )}
     </div>
   );
+
+  const handleAddComment = async () => {
+    if (newCommentText.trim()) {
+      try {
+        const newComment = await addComment({
+          noteId: note.id,
+          text: newCommentText,
+          username,
+        }).unwrap();
+        setComments((prevComments) => {
+          const updatedComments = [newComment, ...prevComments].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          return updatedComments;
+        });
+        setDisplayedComments((prevDisplayed) => {
+          const updatedDisplayed = [newComment, ...prevDisplayed]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, commentsPerPage);
+          return updatedDisplayed;
+        });
+        setNewCommentText("");
+      } catch (err) {
+        console.error("Failed to add comment:", err);
+      }
+    }
+  };
+
+  const handleCommentUpdate = (updatedComment) => {
+    setComments((prevComments) => {
+      const updatedComments = prevComments
+        .map((comment) =>
+          comment._id === updatedComment._id ? updatedComment : comment
+        )
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return updatedComments;
+    });
+    setDisplayedComments((prevDisplayed) => {
+      const updatedDisplayed = prevDisplayed
+        .map((comment) =>
+          comment._id === updatedComment._id ? updatedComment : comment
+        )
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, commentsPerPage);
+      return updatedDisplayed;
+    });
+  };
+
+  const handleCommentDelete = (deletedCommentId) => {
+    setComments((prevComments) => {
+      const updatedComments = prevComments
+        .filter((comment) => comment._id !== deletedCommentId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return updatedComments;
+    });
+    setDisplayedComments((prevDisplayed) => {
+      const updatedDisplayed = prevDisplayed
+        .filter((comment) => comment._id !== deletedCommentId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, commentsPerPage);
+      return updatedDisplayed;
+    });
+  };
+
+  const loadMoreComments = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = (nextPage - 1) * commentsPerPage;
+    const endIndex = startIndex + commentsPerPage;
+    const newComments = comments.slice(startIndex, endIndex);
+    setDisplayedComments((prevDisplayed) => [...prevDisplayed, ...newComments]);
+    setCurrentPage(nextPage);
+  };
 
   return (
     <>
@@ -271,6 +363,47 @@ const EditNoteForm = ({ note, users }) => {
                   <FontAwesomeIcon icon={faCaretDown} />
                 </button>
               </div>
+            </div>
+
+            <div className="comments__section">
+              <h4>Comments ({comments.length})</h4>
+              <div className="add-comment">
+                <textarea
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder="Add a comment..."
+                />
+                <button onClick={handleAddComment}>Add Comment</button>
+              </div>
+              {isLoadingComments ? (
+                <p>Loading comments...</p>
+              ) : (
+                <>
+                  {displayedComments.map((comment) => (
+                    <Comment
+                      key={comment._id}
+                      comment={comment}
+                      noteId={note.id}
+                      onCommentUpdate={handleCommentUpdate}
+                      onCommentDelete={handleCommentDelete}
+                    />
+                  ))}
+                  {comments.length > displayedComments.length ? (
+                    <div
+                      className="add-comment"
+                      style={{ display: "flex", justifyContent: "center" }}
+                    >
+                      <button onClick={loadMoreComments}>
+                        Load More Comments
+                      </button>
+                    </div>
+                  ) : comments.length > 0 ? (
+                    <p>END OF COMMENTS</p>
+                  ) : (
+                    <p>No comments yet</p>
+                  )}
+                </>
+              )}
             </div>
           </>
         ) : (

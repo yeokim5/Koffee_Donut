@@ -271,6 +271,7 @@ tr {
 .note__updated,
 .note__username {
   display: none;
+  color: rgb(75, 178, 215);
 }
 
 .note__status {
@@ -287,7 +288,7 @@ tr {
 
 .form {
   max-width: 800px;
-  min-height: 400px; /* Fixed height */
+  min-height: 550px; /* Fixed height */
   width: auto;
   margin: 2rem auto;
   padding: 2rem;
@@ -296,6 +297,19 @@ tr {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: auto; /* Ensure the form can scroll if the content overflows */
+}
+
+.trending-notes .note-item {
+  background-color: rgba(255, 188, 188, 0.4);
+}
+
+.trending-section {
+  font-size: 1.5rem;
+  color: rgb(223, 27, 27, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
 }
 
 .form__title-row {
@@ -379,6 +393,7 @@ tr {
   margin-top: 1rem;
   border: 1px solid #e1e1e1;
   border-radius: 4px;
+  /* width: 300px; */
 }
 
 .errmsg {
@@ -473,13 +488,22 @@ tr {
   margin: 0 auto;
 }
 
+.cdx-block.embed-tool {
+  width: 70%;
+  margin-left: 15%;
+}
+
 .embed-tool__content[src*="instagram.com"] {
-  height: 980px;
+  height: 710px;
 }
 
 @media screen and (max-width: 768px) {
   .embed-tool__content[src*="instagram.com"] {
-    height: 640px;
+    height: 600px;
+  }
+  .cdx-block.embed-tool {
+    width: 100%;
+    margin-left: 0;
   }
 }
 
@@ -673,9 +697,9 @@ tr {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer; /* Make the entire like section clickable */
-  width: 70px;
+  width: 50px;
   color: #278cff;
   flex-shrink: 0; /* Prevent shrinking */
 }
@@ -868,4 +892,147 @@ tr {
   .account-sections {
     grid-template-columns: 1fr;
   }
+}
+/* Comment Section Styles */
+.comments__section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.comments__section h4 {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e1e1e1;
+  padding-bottom: 0.5rem;
+}
+
+.add-comment {
+  margin-bottom: 2rem;
+}
+
+.add-comment textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.comment__edit-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.add-comment textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.add-comment button {
+  background-color: #d1ddeb;
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.add-comment button:hover {
+  background-color: #868c94;
+}
+
+.comment {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0.5rem; /* Reduced padding */
+  margin-bottom: 0.5rem; /* Reduced margin */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem; /* Smaller font size */
+  overflow-wrap: break-word; /* Ensure long words break within the box */
+  word-wrap: break-word; /* Ensure long words break within the box */
+  overflow: hidden; /* Prevent overflowing content */
+}
+
+.comment__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.comment__author {
+  font-weight: bold;
+  color: #555;
+}
+
+.comment__date {
+  font-size: 0.6rem;
+  color: #888;
+}
+
+.comment__content {
+  color: #333;
+  line-height: 1.5;
+}
+
+.comment__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.comment__actions button {
+  background-color: transparent;
+  border: 1px solid #d1ddeb;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.comment__actions button:hover {
+  background-color: #d1ddeb;
+  color: #000000;
+}
+
+@media screen and (max-width: 768px) {
+  .comments__section {
+    padding: 1rem;
+  }
+
+  .add-comment textarea {
+    font-size: 0.9rem;
+  }
+
+  .add-comment button {
+    font-size: 0.6rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Ensure the body and html take up the full viewport height */
+
+/* Style for the embedded content */
+.embed-tool,
+.embed-tool__content {
+  /* width: 100%; */
+  border: none;
 }

@@ -24,7 +24,7 @@ const NewNoteForm = ({ users }) => {
       setTitle("");
       setEditorContent(null);
       setUserId("");
-      navigate("/dash/notes");
+      navigate("/");
     }
   }, [isSuccess, navigate]);
 
