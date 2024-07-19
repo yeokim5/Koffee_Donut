@@ -18,7 +18,7 @@ const EDITOR_JS_TOOLS = {
 
           console.log("Uploading file:", file.name);
 
-          return fetch("http://localhost:3500/upload", {
+          return fetch(process.env.REACT_APP_BACKEND_URL, {
             method: "POST",
             body: formData,
           })
@@ -53,7 +53,7 @@ const EDITOR_JS_TOOLS = {
             });
         },
         uploadByUrl(url) {
-          return fetch("http://localhost:3500/upload", {
+          return fetch(process.env.REACT_APP_BACKEND_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

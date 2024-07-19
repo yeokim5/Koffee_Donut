@@ -138,13 +138,16 @@ const EditNoteForm = ({ note, users }) => {
 
       // After successful note deletion, delete associated images if any exist
       if (fileNames.length > 0) {
-        const response = await fetch(`http://localhost:3500/deleteImages`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ fileNames }),
-        });
+        const response = await fetch(
+          process.env.REACT_APP_BACKEND_URL`/deleteImages`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fileNames }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
