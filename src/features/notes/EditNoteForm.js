@@ -139,7 +139,7 @@ const EditNoteForm = ({ note, users }) => {
       // After successful note deletion, delete associated images if any exist
       if (fileNames.length > 0) {
         const response = await fetch(
-          process.env.REACT_APP_BACKEND_URL`/deleteImages`,
+          process.env.REACT_APP_BACKEND_URL + "/deleteImages",
           {
             method: "DELETE",
             headers: {

@@ -122,62 +122,36 @@ const EDITOR_JS_TOOLS = {
 };
 
 const EditorComponent = ({ initialData, onChange, readMode }) => {
-  const ejInstance = useRef(null);
+  const ejInstance = useRef();
   const initialDataRef = useRef(initialData);
 
   const initEditor = useCallback(() => {
-    try {
-      const editor = new EditorJS({
-        holder: "editorjs",
-        onReady: () => {
-          ejInstance.current = editor;
-        },
-        readOnly: readMode,
-        data: initialDataRef.current || { blocks: [] },
-        onChange: async () => {
-          if (!readMode) {
-            let content = await editor.saver.save();
-
-            // Check if the last block is a text block
-            const lastBlock = content.blocks[content.blocks.length - 1];
-            if (lastBlock.type !== "paragraph" || !lastBlock.data.text.trim()) {
-              // If not, add an empty text block
-              content.blocks.push({
-                type: "paragraph",
-                data: {
-                  text: "",
-                },
-              });
-            }
-
-            onChange(content);
-          }
-        },
-        tools: EDITOR_JS_TOOLS,
-        minHeight: 20,
-      });
-    } catch (error) {
-      console.error("Failed to initialize EditorJS:", error);
-    }
+    const editor = new EditorJS({
+      holder: "editorjs",
+      onReady: () => {
+        ejInstance.current = editor;
+      },
+      readOnly: readMode,
+      data: initialDataRef.current || { blocks: [] },
+      onChange: async () => {
+        if (!readMode) {
+          let content = await editor.saver.save();
+          onChange(content);
+        }
+      },
+      tools: EDITOR_JS_TOOLS,
+      minHeight: 20,
+    });
   }, [readMode, onChange]);
 
   useEffect(() => {
-    // Ensure the editor is initialized only once the component has mounted
     if (ejInstance.current === null) {
-      const element = document.getElementById("editorjs");
-      if (element) {
-        initEditor();
-      } else {
-        console.error("Editor container element not found");
-      }
+      initEditor();
     }
 
-    // Cleanup editor instance on component unmount
     return () => {
-      if (ejInstance.current) {
-        ejInstance.current.destroy();
-        ejInstance.current = null;
-      }
+      ejInstance?.current?.destroy();
+      ejInstance.current = null;
     };
   }, [initEditor]);
 

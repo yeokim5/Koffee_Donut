@@ -27,6 +27,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
           await queryFulfilled;
           dispatch(logOut());
           localStorage.removeItem("persist");
+          localStorage.removeItem("visitedNotes");
           dispatch(apiSlice.util.resetApiState());
         } catch (err) {
           console.log(err);
