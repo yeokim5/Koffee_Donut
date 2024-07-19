@@ -120,55 +120,64 @@ const EDITOR_JS_TOOLS = {
     },
   },
 };
+
 const EditorComponent = ({ initialData, onChange, readMode }) => {
-  const ejInstance = useRef();
-  const [editorData, setEditorData] = useState(initialData);
+  const ejInstance = useRef(null);
+  const initialDataRef = useRef(initialData);
 
   const initEditor = useCallback(() => {
-    const editor = new EditorJS({
-      holder: "editorjs",
-      onReady: () => {
-        ejInstance.current = editor;
-      },
-      readOnly: readMode,
-      data: editorData || { blocks: [] },
-      onChange: async () => {
-        if (!readMode) {
-          let content = await editor.save();
-          setEditorData(content);
-          onChange(content);
+    try {
+      const editor = new EditorJS({
+        holder: "editorjs",
+        onReady: () => {
+          ejInstance.current = editor;
+        },
+        readOnly: readMode,
+        data: initialDataRef.current || { blocks: [] },
+        onChange: async () => {
+          if (!readMode) {
+            let content = await editor.saver.save();
 
-          // Save to localStorage
-          try {
-            localStorage.setItem("editorContent", JSON.stringify(content));
-          } catch (error) {
-            console.error("Error saving to localStorage:", error);
+            // Check if the last block is a text block
+            const lastBlock = content.blocks[content.blocks.length - 1];
+            if (lastBlock.type !== "paragraph" || !lastBlock.data.text.trim()) {
+              // If not, add an empty text block
+              content.blocks.push({
+                type: "paragraph",
+                data: {
+                  text: "",
+                },
+              });
+            }
+
+            onChange(content);
           }
-        }
-      },
-      tools: EDITOR_JS_TOOLS,
-      minHeight: 20,
-    });
-  }, [readMode, onChange, editorData]);
+        },
+        tools: EDITOR_JS_TOOLS,
+        minHeight: 20,
+      });
+    } catch (error) {
+      console.error("Failed to initialize EditorJS:", error);
+    }
+  }, [readMode, onChange]);
 
   useEffect(() => {
-    // Load from localStorage on component mount
-    try {
-      const savedContent = localStorage.getItem("editorContent");
-      if (savedContent) {
-        setEditorData(JSON.parse(savedContent));
-      }
-    } catch (error) {
-      console.error("Error loading from localStorage:", error);
-    }
-
+    // Ensure the editor is initialized only once the component has mounted
     if (ejInstance.current === null) {
-      initEditor();
+      const element = document.getElementById("editorjs");
+      if (element) {
+        initEditor();
+      } else {
+        console.error("Editor container element not found");
+      }
     }
 
+    // Cleanup editor instance on component unmount
     return () => {
-      ejInstance?.current?.destroy();
-      ejInstance.current = null;
+      if (ejInstance.current) {
+        ejInstance.current.destroy();
+        ejInstance.current = null;
+      }
     };
   }, [initEditor]);
 
