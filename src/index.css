@@ -1,0 +1,1173 @@
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* || VARIABLES */
+
+:root {
+  /* COLORS */
+  --BGCOLOR: #fff8e7;
+  --BORDER-COLOR: black;
+  --COLOR: black;
+  --ERROR: firebrick;
+  --INACTIVE: lightgray;
+  --LINK-COLOR: black;
+  --LINK-HOVER: rgba(172, 82, 82, 0.9);
+  --NOTE-BGCOLOR: hsla(240, 64%, 27%, 0.65);
+  --STATUS-COMPLETE: limegreen;
+  --STATUS-OPEN: firebrick;
+  --TABLE-BGCOLOR: rgb(241, 231, 231);
+  --TABLE-COLOR: rgb(0, 0, 0);
+  --INPUT-INVALID: #f00;
+}
+
+/* || UTILITY CLASSES */
+.errmsg {
+  display: inline-block;
+  background-color: var(--TABLE-BGCOLOR);
+  color: var(--ERROR);
+  padding: 0.25em;
+  margin-bottom: 0.5em;
+}
+
+.errmsg a:any-link {
+  color: var(--ERROR);
+  text-decoration: underline;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.icon-button {
+  width: 48px;
+  height: 48px;
+  font-size: 2.5rem;
+  background-color: transparent;
+  border: none;
+  color: var(--COLOR);
+  display: grid;
+  place-content: center;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  /* Existing styles */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button svg {
+  font-size: 1.2rem;
+}
+
+.form__action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.form__title-row {
+  position: relative;
+  padding-top: 2.5rem;
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+  transform: scale(1.2);
+}
+
+.icon-button[disabled] {
+  visibility: hidden;
+}
+
+/* || GENERAL STYLES */
+
+body {
+  font-family: "Merriweather", sans-serif;
+  min-height: 100vh;
+  background-color: var(--BGCOLOR);
+  color: var(--COLOR);
+  background-size: cover;
+  background-position: top right;
+  background-blend-mode: multiply;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+#root {
+  /* React root div */
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:any-link {
+  color: var(--LINK-COLOR);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--LINK-HOVER);
+}
+
+/* || PAGES */
+
+.public,
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.public {
+  padding: 1em;
+  flex-grow: 1;
+}
+
+.public__main,
+.login {
+  flex-grow: 1;
+  border-top: 2px solid var(--BORDER-COLOR);
+  border-bottom: 2px solid var(--BORDER-COLOR);
+  padding: 1em 0;
+}
+
+.public__addr {
+  margin-top: 1em;
+}
+
+.welcome a::before {
+  content: "➜ ";
+}
+
+/* || DASH HEADER, CONTAINER & FOOTER */
+
+.dash-header {
+  position: sticky;
+  top: -2px;
+  z-index: 2;
+  background-color: var(--BGCOLOR);
+  padding: 0 0.5em;
+  border-bottom: 1px solid var(--BORDER-COLOR);
+}
+
+.dash-header__title {
+  width: 90px;
+  margin: 10px;
+}
+
+.dash-header__container {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dash-header__nav {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  gap: 0.5em;
+}
+
+.dash-container {
+  padding: 0.75em 0.5em 0.5em;
+  flex-grow: 1;
+}
+
+.dash-footer {
+  font-size: 1rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--BGCOLOR);
+  padding: 0.5em;
+  border-top: 1px solid var(--BORDER-COLOR);
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  gap: 1em;
+}
+
+@media only screen and (max-width: 768px) {
+  .ce-popover__container {
+    margin-bottom: 100px;
+  }
+}
+
+.dash-footer__button {
+  font-size: 1rem;
+  width: auto;
+  height: auto;
+}
+
+.dash-footer p {
+  margin: 0; /* Remove default margin */
+}
+
+.dash-footer__button.icon-button go-back {
+  margin-left: 90%;
+}
+
+/* || TABLES - GENERAL */
+
+/* Styles for centering the table */
+.table__container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+thead,
+tbody,
+tr {
+  display: contents;
+}
+
+.table {
+  font-size: 1rem;
+  width: 80%;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  color: var(--TABLE-COLOR);
+}
+
+.table__button {
+  padding: 0.25em;
+  font-size: 1.5rem;
+  color: var(--TABLE-COLOR);
+}
+
+.table__thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table__th,
+.table__cell {
+  background-color: var(--TABLE-BGCOLOR);
+  text-align: left;
+  padding: 0.5em;
+}
+
+.table__cell:last-child {
+  display: grid;
+  place-content: center;
+}
+
+.table__cell--inactive {
+  background-color: var(--INACTIVE);
+}
+
+/* ||  NOTE */
+
+.note__created,
+.note__updated,
+.note__username {
+  display: none;
+  color: rgb(75, 178, 215);
+}
+
+.note__status {
+  font-weight: bold;
+}
+
+.note__status--open {
+  color: var(--STATUS-OPEN);
+}
+
+.note__status--completed {
+  color: var(--STATUS-COMPLETE);
+}
+
+.form {
+  max-width: 800px;
+  min-height: 550px; /* Fixed height */
+  width: auto;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: auto; /* Ensure the form can scroll if the content overflows */
+}
+
+.trending-notes .note-item {
+  background-color: rgba(255, 188, 188, 0.4);
+}
+
+.trending-section {
+  font-size: 1.5rem;
+  color: rgb(223, 27, 27, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.form__title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.form__title-row h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.form__action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.form__label {
+  display: block;
+  margin: 1rem 1rem 1rem 0;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form h3 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form__input--incomplete {
+  border-color: #e74c3c;
+}
+
+.icon-button {
+  background-color: #d1ddeb;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-left: 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button:hover:not(:disabled) {
+  background-color: #868c94;
+}
+
+.icon-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.editor-container {
+  margin-top: 1rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  /* width: 300px; */
+}
+
+.errmsg {
+  background-color: #fdecea;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 600px) {
+  .form {
+    padding: 1rem;
+  }
+
+  .form__title-row h2 {
+    font-size: 1.5rem;
+  }
+
+  .icon-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Styles for the container of the login button */
+.login-button-container {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+}
+
+/* Styles for the login button */
+.login-button {
+  border-radius: 5px;
+  padding: 0.5rem; /* Increase padding to make the button larger */
+  margin: 0.3rem;
+  width: 40%; /* Increase width to make the button wider */
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffc3bf;
+  border: none;
+  cursor: pointer;
+}
+
+.login-button img {
+  height: 30px;
+  width: 30px;
+}
+
+.header_logo {
+  width: 100%;
+  height: auto; /* Ensures the logo scales proportionally */
+  display: block; /* Ensures it behaves as a block element */
+  margin: 0; /* Resets margin */
+  padding: 0; /* Resets padding */
+  background-size: contain; /* Ensures the image fits within the element */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
+  background-position: center center; /* Centers the image within the element */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.header_logo:hover {
+  transform: scale(1.05); /* Slightly increase the size on hover */
+  filter: drop-shadow(
+    0 0 10px rgba(255, 255, 255, 0.7)
+  ); /* Add a white glow effect */
+}
+
+/* If your logo is an image, use this instead of background properties */
+.header_logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.embed-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.embed-tool__content {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.cdx-block.embed-tool {
+  width: 70%;
+  margin-left: 15%;
+}
+
+.embed-tool__content[src*="instagram.com"] {
+  height: 710px;
+}
+
+@media screen and (max-width: 768px) {
+  .embed-tool__content[src*="instagram.com"] {
+    height: 600px;
+  }
+  .cdx-block.embed-tool {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+.embed-tool__caption {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .dash-header__nav {
+    gap: 0;
+  }
+
+  .icon-button {
+    font-size: 1.5rem;
+  }
+
+  .dash-header__title {
+    width: 70px;
+  }
+  .login-button {
+    width: 80%;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  body {
+    font-size: 1.25rem;
+  }
+
+  .dash-header {
+    padding: 0 1em;
+  }
+
+  .dash-container {
+    padding: 1em;
+  }
+
+  .table {
+    font-size: 1.5rem;
+  }
+
+  .table--notes {
+    grid-template-columns: repeat(3, 1fr) 2fr repeat(2, 1fr);
+  }
+
+  .note__created,
+  .note__updated,
+  .note__username {
+    display: block;
+  }
+}
+
+.like__section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.like__components {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 3px rgb(240, 223, 223) solid;
+}
+
+.like-button {
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px; /* Adjusted padding for a smaller button */
+  margin: 0 5px; /* Reduced margin for closer spacing */
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  font-size: 1rem; /* Adjusted font size for smaller text */
+}
+
+.like-button.like {
+  background-color: rgb(0, 174, 255);
+}
+
+.like-button.like.active {
+  background-color: rgb(0, 140, 200); /* Example active color */
+}
+
+.like-button.like:disabled {
+  background-color: #0056b3; /* Example darker background color */
+}
+
+.like-button.dislike {
+  background-color: rgb(254, 73, 73); /* Red color */
+}
+
+.like-button.dislike.active {
+  background-color: rgb(200, 40, 40); /* Example active color */
+}
+
+.like-button.dislike:disabled {
+  background-color: #f80d0d; /* Example darker background color for disabled state */
+}
+
+.like-count {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 20px;
+}
+/* NOTE CSS */
+.note-list-container {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  margin: 0 auto; /* Centers the container horizontally */
+}
+
+@media (max-width: 768px) {
+  .note-list-container {
+    width: 100%; /* Full width on smaller screens */
+    margin: 0; /* Removes the auto margin */
+  }
+}
+
+.note-item {
+  display: flex;
+  flex-direction: row;
+  border-radius: 5px;
+  transition: box-shadow 0.3s ease;
+  padding: 5px;
+  border-top: 1px solid rgb(166, 216, 236);
+}
+
+.note-image-container {
+  display: flex;
+  margin-right: 15px;
+  width: 80px; /* Change width to min-width */
+  height: 60px;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.note-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+.image-tool__caption {
+  visibility: hidden; /* Makes the element invisible */
+  height: 0; /* Collapses the height */
+  overflow: hidden; /* Ensures no content is displayed */
+  margin-bottom: -30px;
+}
+.note-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensures the image fits within the element while maintaining its aspect ratio */
+}
+
+.note-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Allow content to shrink */
+}
+
+.note-title a {
+  font-weight: bold;
+  font-size: 1rem;
+  text-decoration: none;
+  word-wrap: break-word; /* Allow long words to break */
+  overflow-wrap: break-word;
+}
+
+.note-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.note-username,
+.note-updated {
+  font-size: 0.9rem;
+}
+
+.list-like {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.3rem;
+  cursor: pointer; /* Make the entire like section clickable */
+  width: 50px;
+  color: #278cff;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.list-like .fa-caret-up {
+  margin-bottom: 3px; /* Space between caret and like count */
+}
+
+@media (max-width: 768px) {
+  .note-title a {
+    font-size: 1rem; /* Adjusted font size for smaller screens */
+  }
+  .list-like {
+    padding-top: 8px;
+    font-size: 1.1rem;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #b1cdf3;
+  color: white;
+  border: none;
+  padding: 8px 13px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.pagination button:disabled {
+  background-color: #ff7171;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 14px;
+}
+
+/* Styles for the view selector buttons */
+.view-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.view-selector button {
+  background-color: #b1cdf3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.view-selector button:hover {
+  background-color: #868c94;
+}
+
+.view-selector button.active {
+  background-color: #4a90e2;
+  font-weight: bold;
+}
+
+.view-selector button:focus {
+  outline: none;
+  transform: scale(1.1);
+}
+
+/* ACCOUNT CSS */
+
+/* Existing CSS remains the same */
+/* Account Page Styles */
+.followButton {
+  width: 150px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.followButton.follow {
+  background-color: #d8e8ff;
+}
+
+.followButton.unfollow {
+  background-color: #ffd2d2;
+}
+
+.account-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--BGCOLOR);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.account-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.account-header h1 {
+  font-size: 2.5rem;
+  color: var(--COLOR);
+  margin-bottom: 0.5rem;
+}
+
+.account-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-bottom: 30px;
+  gap: 2rem;
+}
+
+.account-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.account-section h2 {
+  font-size: 1.5rem;
+  color: var(--COLOR);
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--BORDER-COLOR);
+  padding-bottom: 0.5rem;
+}
+
+.account-list {
+  list-style-type: none;
+  padding: 0;
+  max-height: 200px; /* Fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.account-list-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--INACTIVE);
+}
+
+.account-list-item:last-child {
+  border-bottom: none;
+}
+
+.account-list-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 1rem;
+}
+
+.account-list-item span {
+  font-size: 1rem;
+  color: var(--COLOR);
+}
+
+/* Styling the scrollbar for webkit browsers */
+.account-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.account-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.account-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.account-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media screen and (max-width: 768px) {
+  .account-sections {
+    grid-template-columns: 1fr;
+  }
+}
+/* Comment Section Styles */
+.comments__section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.comments__section h4 {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e1e1e1;
+  padding-bottom: 0.5rem;
+}
+
+.add-comment {
+  margin-bottom: 2rem;
+}
+
+.add-comment textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.comment__edit-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.add-comment textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.add-comment button {
+  background-color: #d1ddeb;
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.add-comment button:hover {
+  background-color: #868c94;
+}
+
+.comment {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0.5rem; /* Reduced padding */
+  margin-bottom: 0.5rem; /* Reduced margin */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem; /* Smaller font size */
+  overflow-wrap: break-word; /* Ensure long words break within the box */
+  word-wrap: break-word; /* Ensure long words break within the box */
+  overflow: hidden; /* Prevent overflowing content */
+}
+
+.comment__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.comment__author {
+  font-weight: bold;
+  color: #555;
+}
+
+.comment__date {
+  font-size: 0.6rem;
+  color: #888;
+}
+
+.comment__content {
+  color: #333;
+  line-height: 1.5;
+}
+
+.comment__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.comment__actions button {
+  background-color: transparent;
+  border: 1px solid #d1ddeb;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.comment__actions button:hover {
+  background-color: #d1ddeb;
+  color: #000000;
+}
+
+@media screen and (max-width: 768px) {
+  .comments__section {
+    padding: 1rem;
+  }
+
+  .add-comment textarea {
+    font-size: 0.9rem;
+  }
+
+  .add-comment button {
+    font-size: 0.6rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Ensure the body and html take up the full viewport height */
+
+/* Style for the embedded content */
+.embed-tool,
+.embed-tool__content {
+  /* width: 100%; */
+  border: none;
+}
+
+.image-tool__caption {
+  visibility: hidden; /* Makes the element invisible */
+  height: 0; /* Collapses the height */
+  overflow: hidden; /* Ensures no content is displayed */
+}
+
+/* Sign Up page */
+/* NewUserForm Styles */
+.new-user-form {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.new-user-form h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.new-user-form .form__label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.new-user-form .form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.new-user-form .form__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.new-user-form .form__input--incomplete {
+  border-color: #e74c3c;
+}
+
+.new-user-form .form__recaptcha {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.new-user-form .form__submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  background-color: #d1ddeb;
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.new-user-form .form__submit-button:hover:not(:disabled) {
+  background-color: #868c94;
+}
+
+.new-user-form .form__submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.new-user-form .errmsg {
+  background-color: #fdecea;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 600px) {
+  .new-user-form {
+    padding: 1rem;
+  }
+
+  .new-user-form h2 {
+    font-size: 1.5rem;
+  }
+
+  .new-user-form .form__submit-button {
+    font-size: 0.9rem;
+  }
+}
+
+.ce-block__content {
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.ce-paragraph {
+  max-width: 100%;
+}
