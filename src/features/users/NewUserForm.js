@@ -56,7 +56,6 @@ const NewUserForm = () => {
     if (canSave) {
       await addNewUser({ username, password, recaptchaValue });
     }
-    alert("Account Created");
   };
 
   const errClass = isError ? "errmsg" : "offscreen";
