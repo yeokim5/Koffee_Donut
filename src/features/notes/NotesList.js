@@ -51,7 +51,7 @@ const NoteList = () => {
     return [];
   }, [isNotesSuccess, notes]);
 
-  const trendingNoteIds = useMemo(() => {
+  const trendingNoteIdsRecent = useMemo(() => {
     if (isNotesSuccess) {
       const now = new Date();
       const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
@@ -80,7 +80,20 @@ const NoteList = () => {
       return selectedTrendingNotes;
     }
     return [];
-  }, [isNotesSuccess, notes, sortedNoteIds, view]);
+  }, [isNotesSuccess, notes, sortedNoteIds]);
+
+  const trendingNoteIdsTrending = useMemo(() => {
+    if (isNotesSuccess) {
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
+      return sortedNoteIds.filter((noteId) => {
+        const note = notes.entities[noteId];
+        const noteDate = new Date(note.createdAt);
+        return note.likes >= 1 && noteDate > twentyFourHoursAgo;
+      });
+    }
+    return [];
+  }, [isNotesSuccess, notes, sortedNoteIds]);
 
   const followingNoteIds = useMemo(() => {
     if (isNotesSuccess && isUsersSuccess && currentUser) {
@@ -107,7 +120,7 @@ const NoteList = () => {
       case "recent":
         return sortedNoteIds;
       case "trend":
-        return trendingNoteIds;
+        return trendingNoteIdsTrending;
       case "following":
         return followingNoteIds;
       default:
@@ -168,10 +181,8 @@ const NoteList = () => {
 
         {view === "recent" && (
           <div className="trending-notes">
-            {trendingNoteIds.map((noteId) => (
-              <>
-                <Note key={noteId} noteId={noteId} trending={true} />
-              </>
+            {trendingNoteIdsRecent.map((noteId) => (
+              <Note key={noteId} noteId={noteId} trending={true} />
             ))}
           </div>
         )}

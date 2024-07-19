@@ -204,7 +204,8 @@ a:focus-visible {
   border-top: 1px solid var(--BORDER-COLOR);
   display: flex;
   flex-flow: row nowrap;
-  justify-content: flex-start;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
   gap: 1em;
 }
 
@@ -218,6 +219,14 @@ a:focus-visible {
   font-size: 1rem;
   width: auto;
   height: auto;
+}
+
+.dash-footer p {
+  margin: 0; /* Remove default margin */
+}
+
+.dash-footer__button.icon-button go-back {
+  margin-left: 90%;
 }
 
 /* || TABLES - GENERAL */
@@ -665,7 +674,7 @@ tr {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 15px;
 }
 
 .image-tool__caption {
