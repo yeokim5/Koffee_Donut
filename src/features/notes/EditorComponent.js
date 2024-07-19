@@ -120,10 +120,9 @@ const EDITOR_JS_TOOLS = {
     },
   },
 };
-
 const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef();
-  const initialDataRef = useRef(initialData);
+  const [editorData, setEditorData] = useState(initialData);
 
   const initEditor = useCallback(() => {
     const editor = new EditorJS({
@@ -132,19 +131,37 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         ejInstance.current = editor;
       },
       readOnly: readMode,
-      data: initialDataRef.current || { blocks: [] },
+      data: editorData || { blocks: [] },
       onChange: async () => {
         if (!readMode) {
-          let content = await editor.saver.save();
+          let content = await editor.save();
+          setEditorData(content);
           onChange(content);
+
+          // Save to localStorage
+          try {
+            localStorage.setItem("editorContent", JSON.stringify(content));
+          } catch (error) {
+            console.error("Error saving to localStorage:", error);
+          }
         }
       },
       tools: EDITOR_JS_TOOLS,
       minHeight: 20,
     });
-  }, [readMode, onChange]);
+  }, [readMode, onChange, editorData]);
 
   useEffect(() => {
+    // Load from localStorage on component mount
+    try {
+      const savedContent = localStorage.getItem("editorContent");
+      if (savedContent) {
+        setEditorData(JSON.parse(savedContent));
+      }
+    } catch (error) {
+      console.error("Error loading from localStorage:", error);
+    }
+
     if (ejInstance.current === null) {
       initEditor();
     }
