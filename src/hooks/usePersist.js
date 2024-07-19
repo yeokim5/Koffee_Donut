@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 const usePersist = () => {
   const [persist, setPersist] = useState(
-    JSON.parse(localStorage.getItem("persist")) || true
+    JSON.parse(localStorage.getItem("persist")) || false
   );
 
   useEffect(() => {
@@ -11,4 +11,5 @@ const usePersist = () => {
 
   return [persist, setPersist];
 };
+
 export default usePersist;

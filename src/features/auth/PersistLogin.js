@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useRefreshMutation } from "./authApiSlice";
 import usePersist from "../../hooks/usePersist";
@@ -17,14 +17,10 @@ const PersistLogin = () => {
 
   useEffect(() => {
     if (effectRan.current === true || process.env.NODE_ENV !== "development") {
-      // React 18 Strict Mode
-
       const verifyRefreshToken = async () => {
         console.log("verifying refresh token");
         try {
-          //const response =
           await refresh();
-          //const { accessToken } = response.data
           setTrueSuccess(true);
         } catch (err) {
           console.error(err);
@@ -34,41 +30,31 @@ const PersistLogin = () => {
       if (!token && persist) verifyRefreshToken();
     }
 
-    return () => (effectRan.current = true);
-
-    // eslint-disable-next-line
+    return () => {
+      effectRan.current = true;
+    };
   }, []);
 
-  // let content;
-  // if (!persist) {
-  //   // persist: no
-  //   console.log("no persist");
-  //   content = <Outlet />;
-  // } else if (isLoading) {
-  //   //persist: yes, token: no
-  //   console.log("loading");
-  //   content = <Outlet />;
-  // } else if (isError) {
-  //   //persist: yes, token: no
-  //   console.log("no token error");
-  //   // content = (
-  //   //   <p className="errmsg">
-  //   //     {`${error?.data?.message} - `}
-  //   //     <Link to="/login">Please login again</Link>.
-  //   //   </p>
-  //   // );
-  //   content = <Outlet />;
-  // } else if (isSuccess && trueSuccess) {
-  //   //persist: yes, token: yes
-  //   console.log("success");
-  //   content = <Outlet />;
-  // } else if (token && isUninitialized) {
-  //   //persist: yes, token: yes
-  //   console.log("token and uninit");
-  //   console.log(isUninitialized);
-  //   content = <Outlet />;
-  // }
-  const content = <Outlet />;
+  let content;
+  if (!persist) {
+    console.log("no persist");
+    content = <Outlet />;
+  } else if (isLoading) {
+    console.log("loading");
+    content = <p>Loading...</p>;
+  } else if (isError) {
+    console.log("error");
+    content = <Outlet />;
+  } else if (isSuccess && trueSuccess) {
+    console.log("success");
+    content = <Outlet />;
+  } else if (token && isUninitialized) {
+    console.log("token and uninit");
+    content = <Outlet />;
+  } else {
+    console.log("no token");
+    content = <Outlet />;
+  }
 
   return content;
 };

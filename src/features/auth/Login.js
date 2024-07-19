@@ -93,8 +93,8 @@ const Login = () => {
             value={password}
             required
           />
-          <a
-            href="/dash/users/new"
+          <Link
+            to="/dash/users/new"
             style={{
               float: "right",
               marginTop: "10px",
@@ -105,14 +105,14 @@ const Login = () => {
             }}
           >
             Create Account
-          </a>
+          </Link>
           <label htmlFor="persist" className="form__persist">
             <input
               type="checkbox"
               className="form__checkbox"
               id="persist"
               onChange={handleToggle}
-              checked={!persist} // Bind checked to state
+              checked={persist}
               style={{ margin: "20px", padding: "10px", fontSize: "0.6rem" }}
             />
             Trust This Device
