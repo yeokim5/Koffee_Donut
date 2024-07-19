@@ -112,7 +112,7 @@ const Login = () => {
               className="form__checkbox"
               id="persist"
               onChange={handleToggle}
-              checked={persist}
+              checked={!persist}
               style={{ margin: "20px", padding: "10px", fontSize: "0.6rem" }}
             />
             Trust This Device
