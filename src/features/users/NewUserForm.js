@@ -20,8 +20,6 @@ const NewUserForm = () => {
   const [password, setPassword] = useState("");
   const [validPassword, setValidPassword] = useState(false);
   const [recaptchaValue, setRecaptchaValue] = useState("");
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const captchaRef = useRef();
 
@@ -39,34 +37,9 @@ const NewUserForm = () => {
       setPassword("");
       setRecaptchaValue("");
       captchaRef.current.reset();
-      setShowSuccessAlert(true);
-      setTimeout(() => {
-        setShowSuccessAlert(false);
-        navigate("/dash/users");
-      }, 3000);
+      navigate("/dash/users");
     }
   }, [isSuccess, navigate]);
-
-  useEffect(() => {
-    if (isError) {
-      // Store the error message in localStorage
-      localStorage.setItem("newUserFormError", JSON.stringify(error));
-      // Reload the page
-      window.location.href = "/dash/users/new";
-    }
-  }, [isError, error]);
-
-  useEffect(() => {
-    // Check for stored error message on component mount
-    const storedError = localStorage.getItem("newUserFormError");
-    if (storedError) {
-      const parsedError = JSON.parse(storedError);
-      setErrorMessage(parsedError?.data?.message || "An error occurred");
-      // Clear the stored error
-      localStorage.removeItem("newUserFormError");
-      // Hide the error message after 5 seconds
-    }
-  }, []);
 
   const onUsernameChanged = (e) => setUsername(e.target.value);
   const onPasswordChanged = (e) => setPassword(e.target.value);
@@ -81,19 +54,22 @@ const NewUserForm = () => {
   const onSaveUserClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
+      alert("User Created");
       await addNewUser({ username, password, recaptchaValue });
     }
   };
 
+  const errClass = isError ? "errmsg" : "offscreen";
   const validUserClass = !validUsername ? "form__input--incomplete" : "";
   const validPwdClass = !validPassword ? "form__input--incomplete" : "";
 
   const content = (
     <>
-      {errorMessage && <div className="error-alert">{errorMessage}</div>}
-      {showSuccessAlert && (
-        <div className="success-alert">Account Created, Now you can Login!</div>
-      )}
+      <p className={errClass}>
+        {error?.data?.message}
+        {isError && " (refresh the page)"}
+      </p>
+
       <form className="form new-user-form" onSubmit={onSaveUserClicked}>
         <div className="form__title-row">
           <h2>New User</h2>

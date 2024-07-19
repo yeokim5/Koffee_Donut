@@ -51,7 +51,7 @@ const Login = () => {
       } else if (err.status === 401) {
         setErrMsg("Unauthorized");
       } else {
-        setErrMsg(err.data?.message);
+        setErrMsg(err.data?.message + "(refresh page)");
       }
       errRef.current.focus();
     }
