@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRefreshMutation } from "./authApiSlice";
 import usePersist from "../../hooks/usePersist";
 import { useSelector } from "react-redux";
@@ -8,55 +8,35 @@ import { selectCurrentToken } from "./authSlice";
 const PersistLogin = () => {
   const [persist] = usePersist();
   const token = useSelector(selectCurrentToken);
-  const effectRan = useRef(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [trueSuccess, setTrueSuccess] = useState(false);
-
-  const [refresh, { isUninitialized, isLoading, isSuccess, isError, error }] =
-    useRefreshMutation();
+  const [refresh] = useRefreshMutation();
 
   useEffect(() => {
-    if (effectRan.current === true || process.env.NODE_ENV !== "development") {
-      const verifyRefreshToken = async () => {
-        console.log("verifying refresh token");
-        try {
-          await refresh();
-          setTrueSuccess(true);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-
-      if (!token && persist) verifyRefreshToken();
-    }
-
-    return () => {
-      effectRan.current = true;
+    const verifyRefreshToken = async () => {
+      console.log("Verifying refresh token");
+      try {
+        await refresh();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
+    // Always try to refresh the token, regardless of the persist value
+    if (!token) {
+      verifyRefreshToken();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
-  let content;
-  if (!persist) {
-    console.log("no persist");
-    content = <Outlet />;
-  } else if (isLoading) {
-    console.log("loading");
-    content = <p>Loading...</p>;
-  } else if (isError) {
-    console.log("error");
-    content = <Outlet />;
-  } else if (isSuccess && trueSuccess) {
-    console.log("success");
-    content = <Outlet />;
-  } else if (token && isUninitialized) {
-    console.log("token and uninit");
-    content = <Outlet />;
-  } else {
-    console.log("no token");
-    content = <Outlet />;
+  if (isLoading) {
+    return <p>Loading...</p>;
   }
 
-  return content;
+  return <Outlet />;
 };
 
 export default PersistLogin;

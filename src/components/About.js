@@ -31,7 +31,7 @@ const About = () => {
           <li>X (Twitter) posts</li>
           <li>Instagram photos and stories</li>
           <li>Short-form content (Shorts &amp; Reels)</li>
-          <li>Direct image uploads</li>
+          <li>Direct image & video uploads</li>
         </ul>
         <p className="instruction">
           Just click "Share" on your social media post, copy the link, and paste

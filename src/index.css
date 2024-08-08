@@ -6,6 +6,27 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  font-size: 80%; /* Reduce base font size to 80% */
+}
+
+body {
+  font-family: "Merriweather", sans-serif;
+  min-height: 100vh;
+  background-color: var(--BGCOLOR);
+  color: var(--COLOR);
+  background-size: cover;
+  background-position: top right;
+  background-blend-mode: multiply;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
 /* || VARIABLES */
 
 :root {
@@ -171,8 +192,8 @@ a:focus-visible {
 }
 
 .dash-header__title {
-  width: 90px;
-  margin: 10px;
+  width: 72px; /* 90px * 0.8 */
+  margin: 8px; /* 10px * 0.8 */
 }
 
 .dash-header__container {
@@ -196,11 +217,11 @@ a:focus-visible {
 
 .dash-footer {
   font-size: 1rem;
+  padding: 1em;
   position: sticky;
   bottom: 0;
   z-index: 1;
   background-color: var(--BGCOLOR);
-  padding: 0.5em;
   border-top: 1px solid var(--BORDER-COLOR);
   display: flex;
   flex-flow: row nowrap;
