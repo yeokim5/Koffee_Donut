@@ -54,6 +54,10 @@ const NewUserForm = () => {
   const onSaveUserClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
+<<<<<<< HEAD
+=======
+      alert("User Created");
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
       await addNewUser({ username, password, recaptchaValue });
     }
   };
@@ -64,7 +68,14 @@ const NewUserForm = () => {
 
   const content = (
     <>
+<<<<<<< HEAD
       <p className={errClass}>{error?.data?.message}</p>
+=======
+      <p className={errClass}>
+        {error?.data?.message}
+        {isError && " (refresh the page)"}
+      </p>
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
 
       <form className="form new-user-form" onSubmit={onSaveUserClicked}>
         <div className="form__title-row">

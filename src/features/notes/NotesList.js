@@ -16,6 +16,7 @@ const NoteList = () => {
     isSuccess: isNotesSuccess,
     isError: isNotesError,
     error: notesError,
+<<<<<<< HEAD
   } = useGetNotesQuery(
     "notesList"
     //   {
@@ -24,6 +25,13 @@ const NoteList = () => {
     //   refetchOnMountOrArgChange: true,
     // }
   );
+=======
+  } = useGetNotesQuery("notesList", {
+    pollingInterval: 15000,
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+  });
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
 
   const {
     data: users,

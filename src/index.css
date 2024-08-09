@@ -6,6 +6,7 @@
   box-sizing: border-box;
 }
 
+<<<<<<< HEAD
 html,
 body {
   font-size: 80%; /* Reduce base font size to 80% */
@@ -27,6 +28,8 @@ body {
   flex-flow: column nowrap;
 }
 
+=======
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
 /* || VARIABLES */
 
 :root {
@@ -192,8 +195,13 @@ a:focus-visible {
 }
 
 .dash-header__title {
+<<<<<<< HEAD
   width: 72px; /* 90px * 0.8 */
   margin: 8px; /* 10px * 0.8 */
+=======
+  width: 90px;
+  margin: 10px;
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
 }
 
 .dash-header__container {
@@ -217,11 +225,18 @@ a:focus-visible {
 
 .dash-footer {
   font-size: 1rem;
+<<<<<<< HEAD
   padding: 1em;
+=======
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
   position: sticky;
   bottom: 0;
   z-index: 1;
   background-color: var(--BGCOLOR);
+<<<<<<< HEAD
+=======
+  padding: 0.5em;
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
   border-top: 1px solid var(--BORDER-COLOR);
   display: flex;
   flex-flow: row nowrap;
@@ -1181,3 +1196,17 @@ tr {
     font-size: 0.9rem;
   }
 }
+<<<<<<< HEAD
+=======
+
+.ce-block__content {
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.ce-paragraph {
+  max-width: 100%;
+}
+>>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
