@@ -28,13 +28,6 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
-    setPersist(true);
-  }, [setPersist]);
-
-  useEffect(() => {
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
     setErrMsg("");
   }, [username, password]);
 
@@ -54,11 +47,7 @@ const Login = () => {
       } else if (err.status === 401) {
         setErrMsg("Unauthorized");
       } else {
-<<<<<<< HEAD
         setErrMsg(err.data?.message);
-=======
-        setErrMsg(err.data?.message + "(refresh page)");
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
       }
       errRef.current.focus();
     }
@@ -81,10 +70,6 @@ const Login = () => {
         <p ref={errRef} className={errClass} aria-live="assertive">
           {errMsg}
         </p>
-<<<<<<< HEAD
-
-=======
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
         <form className="form" onSubmit={handleSubmit}>
           <label htmlFor="username">Username:</label>
           <input
@@ -126,11 +111,7 @@ const Login = () => {
               className="form__checkbox"
               id="persist"
               onChange={handleToggle}
-<<<<<<< HEAD
               checked={!persist}
-=======
-              checked={persist}
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
               style={{ margin: "20px", padding: "10px", fontSize: "0.6rem" }}
             />
             Trust This Device

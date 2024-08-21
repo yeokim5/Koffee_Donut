@@ -98,7 +98,6 @@ const EDITOR_JS_TOOLS = {
     inlineToolbar: true,
     config: {
       services: {
-<<<<<<< HEAD
         youtube: {
           regex:
             /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]{11})(?:[?&].*)?/,
@@ -107,9 +106,6 @@ const EDITOR_JS_TOOLS = {
           height: 320,
           width: 580,
         },
-=======
-        youtube: true,
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
         instagram: {
           regex: /https?:\/\/www\.instagram\.com\/p\/([^\/\?\&]+)\/?.*/,
           embedUrl: "https://www.instagram.com/p/<%= remote_id %>/embed",
@@ -137,13 +133,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   const initialDataRef = useRef(initialData);
 
   const initEditor = useCallback(() => {
-<<<<<<< HEAD
-=======
-    if (ejInstance.current !== null) {
-      return; // Prevent reinitialization
-    }
-
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
     try {
       const editor = new EditorJS({
         holder: "editorjs",
@@ -155,7 +144,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         onChange: async () => {
           if (!readMode) {
             let content = await editor.saver.save();
-<<<<<<< HEAD
 
             // Check if the last block is a text block
             const lastBlock = content.blocks[content.blocks.length - 1];
@@ -169,8 +157,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
               });
             }
 
-=======
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
             onChange(content);
           }
         },
@@ -183,7 +169,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   }, [readMode, onChange]);
 
   useEffect(() => {
-<<<<<<< HEAD
     // Ensure the editor is initialized only once the component has mounted
     if (ejInstance.current === null) {
       const element = document.getElementById("editorjs");
@@ -192,10 +177,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       } else {
         console.error("Editor container element not found");
       }
-=======
-    if (ejInstance.current === null) {
-      initEditor();
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
     }
 
     // Cleanup editor instance on component unmount

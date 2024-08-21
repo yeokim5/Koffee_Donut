@@ -1,14 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useGetNotesQuery } from "./notesApiSlice";
 import { useGetUsersQuery } from "../users/usersApiSlice";
 import Note from "./Note";
 import useAuth from "../../hooks/useAuth";
+import { useInView } from "react-intersection-observer";
+import BeatLoader from "react-spinners/BeatLoader";
+
+const NOTES_PER_PAGE = 10;
 
 const NoteList = () => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState("recent");
-  const notesPerPage = 10;
+  const [displayedNotes, setDisplayedNotes] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const { username } = useAuth();
+  const { ref, inView } = useInView();
 
   const {
     data: notes,
@@ -16,22 +23,7 @@ const NoteList = () => {
     isSuccess: isNotesSuccess,
     isError: isNotesError,
     error: notesError,
-<<<<<<< HEAD
-  } = useGetNotesQuery(
-    "notesList"
-    //   {
-    //   pollingInterval: 15000,
-    //   refetchOnFocus: true,
-    //   refetchOnMountOrArgChange: true,
-    // }
-  );
-=======
-  } = useGetNotesQuery("notesList", {
-    pollingInterval: 15000,
-    refetchOnFocus: true,
-    refetchOnMountOrArgChange: true,
-  });
->>>>>>> c5a6b7df98f694191c674c3f2879425a51b3af48
+  } = useGetNotesQuery("notesList");
 
   const {
     data: users,
@@ -75,7 +67,6 @@ const NoteList = () => {
         .sort((a, b) => notes.entities[b].likes - notes.entities[a].likes)
         .slice(0, 10);
 
-      // Randomly select 3 notes from the top 10
       const selectedTrendingNotes = [];
       while (
         selectedTrendingNotes.length < 3 &&
@@ -126,7 +117,7 @@ const NoteList = () => {
     users,
   ]);
 
-  const getDisplayedNoteIds = () => {
+  const getDisplayedNoteIds = useCallback(() => {
     switch (view) {
       case "recent":
         return sortedNoteIds;
@@ -137,23 +128,30 @@ const NoteList = () => {
       default:
         return sortedNoteIds;
     }
-  };
+  }, [view, sortedNoteIds, trendingNoteIdsTrending, followingNoteIds]);
 
-  const displayedNoteIds = getDisplayedNoteIds();
-  const totalPages = Math.ceil(displayedNoteIds.length / notesPerPage);
+  useEffect(() => {
+    const noteIds = getDisplayedNoteIds();
+    const newDisplayedNotes = noteIds.slice(0, page * NOTES_PER_PAGE);
+    setDisplayedNotes(newDisplayedNotes);
+    setHasMore(newDisplayedNotes.length < noteIds.length);
+  }, [getDisplayedNoteIds, page]);
 
-  const currentNoteIds = displayedNoteIds.slice(
-    (currentPage - 1) * notesPerPage,
-    currentPage * notesPerPage
-  );
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
+  useEffect(() => {
+    if (inView && !isLoadingMore && hasMore) {
+      setIsLoadingMore(true);
+      setTimeout(() => {
+        setPage((prevPage) => prevPage + 1);
+        setIsLoadingMore(false);
+      }, 1000);
+    }
+  }, [inView, isLoadingMore, hasMore]);
 
   const handleViewChange = (newView) => {
     setView(newView);
-    setCurrentPage(1);
+    setPage(1);
+    setDisplayedNotes([]);
+    setHasMore(true);
   };
 
   let content;
@@ -199,25 +197,18 @@ const NoteList = () => {
         )}
 
         <div className="note-list">
-          {currentNoteIds.map((noteId) => (
+          {displayedNotes.map((noteId) => (
             <Note key={noteId} noteId={noteId} />
           ))}
         </div>
-        {totalPages > 1 && (
-          <div className="pagination">
-            {currentPage > 1 && (
-              <button onClick={() => handlePageChange(currentPage - 1)}>
-                Previous
-              </button>
-            )}
-            <span>{`Page ${currentPage} of ${totalPages}`}</span>
-            {currentPage < totalPages && (
-              <button onClick={() => handlePageChange(currentPage + 1)}>
-                Next
-              </button>
-            )}
-          </div>
-        )}
+        <div ref={ref}>
+          {isLoadingMore && hasMore && (
+            <div className="loader-container">
+              <BeatLoader size={10} color="#b4b4b4" />
+            </div>
+          )}
+          {!hasMore && <p>No more notes to load.</p>}
+        </div>
       </div>
     );
   }
