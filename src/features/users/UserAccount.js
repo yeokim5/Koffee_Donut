@@ -7,21 +7,21 @@ import {
   useUnFollowUserMutation,
 } from "./usersApiSlice";
 import useAuth from "../../hooks/useAuth";
-import { useGetNotesQuery } from "../notes/notesApiSlice";
+import { useGetNotesByUsernameQuery } from "../notes/notesApiSlice";
 import Note from "../notes/Note";
 
 const UserAccount = () => {
   const [followUser] = useFollowUserMutation();
   const [unFollowUser] = useUnFollowUserMutation();
   const { data: userData, isLoading, isError } = useGetUsersQuery();
+  const { username: profileUsername } = useParams();
+  const { username } = useAuth();
   const {
     data: noteData,
     isLoading: noteLoading,
     isError: noteError,
-  } = useGetNotesQuery();
+  } = useGetNotesByUsernameQuery(profileUsername);
   const location = useLocation();
-  const { username: profileUsername } = useParams();
-  const { username } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState("recent");
@@ -47,13 +47,11 @@ const UserAccount = () => {
   );
 
   const userNotes = useMemo(() => {
-    if (noteData && noteData.entities && profileUser) {
-      return Object.values(noteData.entities).filter(
-        (note) => note.user === profileUser.id
-      );
+    if (noteData && noteData.ids) {
+      return noteData.ids.map((id) => noteData.entities[id]);
     }
     return [];
-  }, [noteData, profileUser]);
+  }, [noteData]);
 
   const sortedNotes = useMemo(() => {
     if (view === "recent") {

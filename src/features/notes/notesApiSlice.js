@@ -11,24 +11,29 @@ const initialState = notesAdapter.getInitialState();
 export const notesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNotes: builder.query({
-      query: () => ({
-        url: "/notes",
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/notes?page=${page}&limit=${limit}`,
         validateStatus: (response, result) => {
           return response.status === 200 && !result.isError;
         },
       }),
       transformResponse: (responseData) => {
-        const loadedNotes = responseData.map((note) => {
+        const loadedNotes = responseData.notes.map((note) => {
           note.id = note._id;
           return note;
         });
-        return notesAdapter.setAll(initialState, loadedNotes);
+        return {
+          notes: notesAdapter.setAll(initialState, loadedNotes),
+          currentPage: responseData.currentPage,
+          totalPages: responseData.totalPages,
+          totalNotes: responseData.totalNotes,
+        };
       },
       providesTags: (result, error, arg) => {
-        if (result?.ids) {
+        if (result?.notes?.ids) {
           return [
             { type: "Note", id: "LIST" },
-            ...result.ids.map((id) => ({ type: "Note", id })),
+            ...result.notes.ids.map((id) => ({ type: "Note", id })),
           ];
         } else return [{ type: "Note", id: "LIST" }];
       },
@@ -78,14 +83,47 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
     }),
+
+    getNoteById: builder.query({
+      query: (id) => `/notes/${id}`,
+      validateStatus: (response, result) => {
+        return response.status === 200 && !result.isError;
+      },
+      transformResponse: (responseData) => {
+        const loadedNote = { ...responseData, id: responseData._id };
+        return { note: loadedNote };
+      },
+      providesTags: (result, error, arg) => [{ type: "Note", id: arg }],
+    }),
+
+    getNotesByUsername: builder.query({
+      query: (username) => `/notes/user/${username}`,
+      transformResponse: (responseData) => {
+        const loadedNotes = responseData.map((note) => {
+          note.id = note._id;
+          return note;
+        });
+        return notesAdapter.setAll(initialState, loadedNotes);
+      },
+      providesTags: (result, error, arg) => {
+        if (result?.ids) {
+          return [
+            { type: "Note", id: "LIST" },
+            ...result.ids.map((id) => ({ type: "Note", id })),
+          ];
+        } else return [{ type: "Note", id: "LIST" }];
+      },
+    }),
   }),
 });
 
 export const {
   useGetNotesQuery,
+  useGetNoteByIdQuery, // Make sure this is exported
   useAddNewNoteMutation,
   useUpdateNoteMutation,
   useDeleteNoteMutation,
   useLikeNoteMutation,
   useDislikeNoteMutation,
+  useGetNotesByUsernameQuery,
 } = notesApiSlice;

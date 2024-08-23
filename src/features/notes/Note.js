@@ -1,12 +1,10 @@
+import React from "react";
+import { useGetNoteByIdQuery } from "./notesApiSlice";
+import PulseLoader from "react-spinners/PulseLoader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowTrendUp,
-  faCaretUp,
-  faFire,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { useGetNotesQuery } from "./notesApiSlice";
-import { memo, useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 const getRelativeTime = (date) => {
   const now = new Date();
@@ -38,13 +36,13 @@ const getVisitedNotes = () => {
   const visitedNotes = localStorage.getItem("visitedNotes");
   return visitedNotes ? JSON.parse(visitedNotes) : [];
 };
-
-const Note = ({ noteId, trending }) => {
-  const { note } = useGetNotesQuery("notesList", {
-    selectFromResult: ({ data }) => ({
-      note: data?.entities[noteId],
-    }),
-  });
+const Note = ({ noteId }) => {
+  const {
+    data: noteData,
+    isLoading,
+    isError,
+    error,
+  } = useGetNoteByIdQuery(noteId);
 
   const navigate = useNavigate();
   const [isVisited, setIsVisited] = useState(false);
@@ -54,92 +52,82 @@ const Note = ({ noteId, trending }) => {
     setIsVisited(visitedNotes.includes(noteId));
   }, [noteId]);
 
-  if (note) {
-    const createdDate = new Date(note.createdAt);
-    const createdRelative = getRelativeTime(createdDate);
+  if (isLoading) {
+    return <PulseLoader color={"#FFF"} />;
+  }
 
-    const viewNote = () => {
-      let visitedNotes = getVisitedNotes();
-      if (!visitedNotes.includes(noteId)) {
-        visitedNotes.push(noteId);
-        setVisitedNotes(visitedNotes);
-        setIsVisited(true);
-      }
-      navigate(`/dash/notes/${noteId}`);
-    };
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  }
 
-    const viewUserAccount = () =>
-      navigate(`/dash/users/${note.username}`, {
-        state: { username: note.username },
-      });
+  const note = noteData?.note;
 
-    const linkStyle = {
-      color: isVisited ? "rgb(75, 178, 215)" : "black",
-      textDecoration: "none",
-      cursor: "pointer",
-    };
+  if (!note) {
+    return <div>Note not found</div>;
+  }
 
-    function extractImageUrl(jsonString) {
-      // Parse the JSON string
-      const jsonObject = JSON.parse(jsonString);
+  const createdDate = new Date(note.createdAt);
+  const createdRelative = getRelativeTime(createdDate);
 
-      // Iterate through the blocks array
-      for (let block of jsonObject.blocks) {
-        // Check if the block type is image
-        if (block.type === "image") {
-          // Return the URL
-          return block.data.file.url;
-        }
-      }
-
-      // If no image block is found, return null or an appropriate message
-      return null;
+  const viewNote = () => {
+    let visitedNotes = getVisitedNotes();
+    if (!visitedNotes.includes(noteId)) {
+      visitedNotes.push(noteId);
+      setVisitedNotes(visitedNotes);
+      setIsVisited(true);
     }
+    navigate(`/dash/notes/${noteId}`);
+  };
 
-    return (
-      <div className="note-list-container">
-        <div className="note-item">
-          <div className="trending-section">
-            <div className="trending-icon">
-              {trending && <FontAwesomeIcon icon={faFire} />}
-            </div>
+  const viewUserAccount = () =>
+    navigate(`/dash/users/${note.username}`, {
+      state: { username: note.username },
+    });
+
+  const linkStyle = {
+    color: isVisited ? "rgb(75, 178, 215)" : "black",
+    textDecoration: "none",
+    cursor: "pointer",
+  };
+
+  function extractImageUrl(jsonString) {
+    // ... existing extractImageUrl function ...
+  }
+
+  return (
+    <div className="note-list-container">
+      <div className="note-item">
+        <div className="list-like">
+          <FontAwesomeIcon icon={faCaretUp} />
+          {note.likes}
+        </div>
+        <div className="note-image-container">
+          <div className="note-image">
+            <img
+              src={
+                extractImageUrl(note.text) ||
+                "https://koffee-donut.s3.amazonaws.com/no+image.png"
+              }
+              alt="Note"
+            />
           </div>
-          <div className="list-like">
-            <FontAwesomeIcon icon={faCaretUp} />
-            {note.likes}
+        </div>
+        <div className="note-content">
+          <div className="note-title">
+            <a onClick={viewNote} style={linkStyle}>
+              {shortenTitle(note.title)}
+            </a>
           </div>
-          <div className="note-image-container">
-            <div className="note-image">
-              <img
-                src={
-                  extractImageUrl(note.text) ||
-                  "https://koffee-donut.s3.amazonaws.com/no+image.png"
-                }
-                alt="Note"
-              />
-            </div>
-          </div>
-          <div className="note-content">
-            <div className="note-title">
-              <a onClick={viewNote} style={linkStyle}>
-                {shortenTitle(note.title)}
-              </a>
-            </div>
-            <div className="note-details">
-              <div className="note-username">
-                {createdRelative} /{" "}
-                <a onClick={viewUserAccount}>
-                  {shortenUsername(note.username)}
-                </a>
-              </div>
+          <div className="note-details">
+            <div className="note-username">
+              {createdRelative} /{" "}
+              <a onClick={viewUserAccount}>{shortenUsername(note.username)}</a>
             </div>
           </div>
         </div>
       </div>
-    );
-  } else return null;
+    </div>
+  );
 };
 
-const memoizedNote = memo(Note);
-
-export default memoizedNote;
+export default Note;

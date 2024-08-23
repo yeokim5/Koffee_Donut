@@ -1188,3 +1188,15 @@ tr {
   justify-content: center;
   padding: 20px 0;
 }
+
+.notes-list {
+  /* existing styles */
+  position: relative;
+  min-height: 100vh;
+}
+
+.notes-list > div:last-child {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
