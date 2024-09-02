@@ -22,7 +22,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import EditorComponent from "./EditorComponent";
-import { useGetUsersQuery } from "../users/usersApiSlice";
+import {
+  useGetUserDataByUsernameQuery,
+  useGetUsersQuery,
+} from "../users/usersApiSlice";
 import Comment from "../comments/Comment";
 import { AlignCenter } from "lucide-react";
 
@@ -37,15 +40,13 @@ const EditNoteForm = ({ note, users }) => {
   const [likeNote] = useLikeNoteMutation();
   const [dislikeNote] = useDislikeNoteMutation();
   const navigate = useNavigate();
-  const { data: userData, isLoading: isUserDataLoading } = useGetUsersQuery();
+  // const { data: userData, isLoading: isUserDataLoading } = useGetUsersQuery();
 
-  const user = users.find((user) => user.username === username);
-  const note_owner = useMemo(() => {
-    if (userData && userData.entities && note.user) {
-      return userData.entities[note.user] || { username: "Unknown User" };
-    }
-    return { username: "Unknown User" };
-  }, [userData, note.user]);
+  const { data: userData, isLoading: isUserDataLoading } =
+    useGetUserDataByUsernameQuery(note.username);
+
+  const user = userData;
+  const note_owner = userData.username ? userData.username : "unknown user";
 
   const userId = user?.id;
   const [formData, setFormData] = useState({
@@ -368,9 +369,7 @@ const EditNoteForm = ({ note, users }) => {
               {isUserDataLoading ? (
                 "Loading user data..."
               ) : (
-                <Link to={`/dash/users/${note_owner.username}`}>
-                  {note_owner.username}
-                </Link>
+                <Link to={`/dash/users/${note_owner}`}>{note_owner}</Link>
               )}
             </h5>
           </>

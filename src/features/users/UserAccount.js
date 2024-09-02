@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import { Link, useLocation, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
-  useGetUsersQuery,
+  useGetUserDataByUsernameQuery,
   useFollowUserMutation,
   useUnFollowUserMutation,
 } from "./usersApiSlice";
@@ -13,70 +12,37 @@ import Note from "../notes/Note";
 const UserAccount = () => {
   const [followUser] = useFollowUserMutation();
   const [unFollowUser] = useUnFollowUserMutation();
-  const { data: userData, isLoading, isError } = useGetUsersQuery();
   const { username: profileUsername } = useParams();
   const { username } = useAuth();
+  const {
+    data: profileUser,
+    isLoading: userIsLoading,
+    isError: userIsError,
+  } = useGetUserDataByUsernameQuery(profileUsername);
   const {
     data: noteData,
     isLoading: noteLoading,
     isError: noteError,
   } = useGetNotesByUsernameQuery(profileUsername);
-  const location = useLocation();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState("recent");
   const notesPerPage = 5;
 
-  const findUserByUsername = useMemo(() => {
-    return (users, targetUsername) =>
-      users
-        ? Object.values(users.entities).find(
-            (user) => user.username === targetUsername
-          )
-        : null;
-  }, []);
+  const userNotes = noteData?.ids.map((id) => noteData.entities[id]) || [];
 
-  const currentUser = useMemo(
-    () => (userData ? findUserByUsername(userData, username) : null),
-    [userData, username, findUserByUsername]
-  );
-
-  const profileUser = useMemo(
-    () => (userData ? findUserByUsername(userData, profileUsername) : null),
-    [userData, profileUsername, findUserByUsername]
-  );
-
-  const userNotes = useMemo(() => {
-    if (noteData && noteData.ids) {
-      return noteData.ids.map((id) => noteData.entities[id]);
-    }
-    return [];
-  }, [noteData]);
-
-  const sortedNotes = useMemo(() => {
-    if (view === "recent") {
-      return [...userNotes].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    } else if (view === "trend") {
-      const now = new Date();
-      const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
-      return userNotes
-        .filter(
-          (note) =>
-            new Date(note.createdAt) > twentyFourHoursAgo && note.likes >= 1
+  const sortedNotes =
+    view === "recent"
+      ? [...userNotes].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         )
-        .sort((a, b) => b.likes - a.likes);
-    }
-    return userNotes;
-  }, [userNotes, view]);
+      : userNotes;
 
-  if (isLoading || noteLoading) return <div>Loading...</div>;
-  if (isError || noteError) return <div>Error loading data</div>;
+  if (userIsLoading || noteLoading) return <div>Loading...</div>;
+  if (userIsError || noteError) return <div>Error loading data</div>;
   if (!profileUser) return <div>User not found</div>;
 
-  const following = profileUser.following;
-  const followers = profileUser.followers || [];
+  const { following, followers = [] } = profileUser;
 
   const handleFollow = async () => {
     if (!username) {
@@ -85,6 +51,7 @@ const UserAccount = () => {
     }
     try {
       await followUser(profileUsername).unwrap();
+      window.location.reload();
     } catch (err) {
       console.error("Failed to follow user:", err);
     }
@@ -97,13 +64,14 @@ const UserAccount = () => {
     }
     try {
       await unFollowUser(profileUsername).unwrap();
+      window.location.reload();
     } catch (err) {
       console.error("Failed to unfollow user:", err);
     }
   };
-  const isFollowing =
-    currentUser?.following?.includes(profileUsername) || false;
-  const isOwnProfile = currentUser?.username === profileUsername;
+
+  const isFollowing = profileUser.followers?.includes(username) || false;
+  const isOwnProfile = username === profileUsername;
 
   const totalPages = Math.ceil(sortedNotes.length / notesPerPage);
   const currentNotes = sortedNotes.slice(
@@ -145,13 +113,7 @@ const UserAccount = () => {
             onClick={() => handleViewChange("recent")}
             className={view === "recent" ? "active" : ""}
           >
-            Recent
-          </button>
-          <button
-            onClick={() => handleViewChange("trend")}
-            className={view === "trend" ? "active" : ""}
-          >
-            {profileUsername}'s Trending Note
+            {profileUsername}'s Recent Notes
           </button>
         </div>
         <div className="note-list">

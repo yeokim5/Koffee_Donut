@@ -9,6 +9,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: { ...credentials },
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCredentials({ accessToken: data.accessToken })); // Ensure this matches your token structure
+        } catch (err) {
+          console.log(err);
+        }
+      },
     }),
     googleLogin: builder.mutation({
       query: (credentials) => ({
@@ -42,11 +50,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log(data);
           const { accessToken } = data;
-          dispatch(setCredentials({ accessToken }));
+          dispatch(setCredentials({ accessToken })); // Set new access token
         } catch (err) {
           console.log(err);
+          // Handle token refresh failure
+          dispatch(logOut());
         }
       },
     }),

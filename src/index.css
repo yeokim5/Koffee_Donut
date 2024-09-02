@@ -1195,8 +1195,8 @@ tr {
   min-height: 100vh;
 }
 
-.notes-list > div:last-child {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-}
+/* .notes-list > div:last-child { */
+/* position: absolute; */
+/* bottom: 0; */
+/* width: 100%; */
+/* } */

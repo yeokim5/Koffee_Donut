@@ -9,7 +9,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query({
       query: () => ({
-        url: "/users",
+        url: "/users/all",
         validateStatus: (response, result) => {
           return response.status === 200 && !result.isError;
         },
@@ -17,7 +17,9 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       transformResponse: (responseData) => {
         const loadedUsers = responseData.map((user) => {
           user.id = user._id;
-          return user;
+          // Exclude sensitive fields
+          const { password, email, ...safeUserData } = user; // Exclude password and email
+          return safeUserData; // Return only safe user data
         });
         return usersAdapter.setAll(initialState, loadedUsers);
       },
@@ -29,6 +31,18 @@ export const usersApiSlice = apiSlice.injectEndpoints({
           ];
         } else return [{ type: "User", id: "LIST" }];
       },
+    }),
+    // New endpoint for getting user data by username
+    getUserDataByUsername: builder.query({
+      query: (username) => `/users/${username}`, // Adjusted to use username
+      transformResponse: (responseData) => {
+        responseData.id = responseData._id; // Set the id for the entity
+        const { password, ...safeUserData } = responseData; // Exclude password
+        return safeUserData; // Return only safe user data
+      },
+      providesTags: (result, error, arg) => [
+        { type: "User", id: result?.id || arg },
+      ], // Updated to use result.id
     }),
     addNewUser: builder.mutation({
       query: (initialUserData) => ({
@@ -76,10 +90,11 @@ export const usersApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetUsersQuery,
+  // useGetUsersQuery,
   useAddNewUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
   useFollowUserMutation,
   useUnFollowUserMutation,
+  useGetUserDataByUsernameQuery,
 } = usersApiSlice;

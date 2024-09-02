@@ -46,7 +46,6 @@ const DashFooter = () => {
   const content = (
     <footer className="dash-footer">
       {goHomeButton}
-
       {isAuthenticated ? (
         <p>Current User: {username}</p>
       ) : (

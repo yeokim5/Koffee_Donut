@@ -114,16 +114,45 @@ export const notesApiSlice = apiSlice.injectEndpoints({
         } else return [{ type: "Note", id: "LIST" }];
       },
     }),
+
+    getTrendingNotes: builder.query({
+      query: () => `/notes/trending`,
+      transformResponse: (responseData) => {
+        return responseData;
+      },
+      providesTags: [{ type: "Note", id: "TRENDING" }],
+    }),
+
+    getFollowerNotes: builder.query({
+      query: (username) => `/notes/following/${username}`,
+      transformResponse: (responseData) => {
+        const loadedNotes = responseData.map((note) => {
+          note.id = note._id;
+          return note;
+        });
+        return notesAdapter.setAll(initialState, loadedNotes);
+      },
+      providesTags: (result, error, arg) => {
+        if (result?.ids) {
+          return [
+            { type: "Note", id: "FOLLOWER_LIST" },
+            ...result.ids.map((id) => ({ type: "Note", id })),
+          ];
+        } else return [{ type: "Note", id: "FOLLOWER_LIST" }];
+      },
+    }),
   }),
 });
 
 export const {
   useGetNotesQuery,
-  useGetNoteByIdQuery, // Make sure this is exported
+  useGetNoteByIdQuery,
   useAddNewNoteMutation,
   useUpdateNoteMutation,
   useDeleteNoteMutation,
   useLikeNoteMutation,
   useDislikeNoteMutation,
   useGetNotesByUsernameQuery,
+  useGetTrendingNotesQuery,
+  useGetFollowerNotesQuery,
 } = notesApiSlice;

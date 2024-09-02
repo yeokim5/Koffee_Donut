@@ -4,26 +4,20 @@ import { useAddNewNoteMutation } from "./notesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import EditorComponent from "./EditorComponent";
-import useAuth from "../../hooks/useAuth";
 
-const NewNoteForm = ({ users }) => {
+const NewNoteForm = ({ user }) => {
   const [addNewNote, { isLoading, isSuccess, isError, error }] =
     useAddNewNoteMutation();
 
-  const { username } = useAuth();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [editorContent, setEditorContent] = useState(null);
-  const [userId, setUserId] = useState(users[0]?.id || "");
-
-  const user = users.find((user) => user.username === username);
 
   useEffect(() => {
     if (isSuccess) {
       setTitle("");
       setEditorContent(null);
-      setUserId("");
       navigate("/");
     }
   }, [isSuccess, navigate]);
@@ -34,7 +28,7 @@ const NewNoteForm = ({ users }) => {
     setEditorContent(content);
   }, []);
 
-  const canSave = [title, editorContent, userId].every(Boolean) && !isLoading;
+  const canSave = [title, editorContent, user?.id].every(Boolean) && !isLoading;
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
@@ -46,12 +40,6 @@ const NewNoteForm = ({ users }) => {
       });
     }
   };
-
-  const options = users.map((user) => (
-    <option key={user.id} value={user.id}>
-      {user.username}
-    </option>
-  ));
 
   const errClass = isError ? "errmsg" : "offscreen";
   const validTitleClass = !title ? "form__input--incomplete" : "";

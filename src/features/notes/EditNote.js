@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import EditNoteForm from "./EditNoteForm";
 import { useGetNoteByIdQuery } from "./notesApiSlice";
-import { useGetUsersQuery } from "../users/usersApiSlice";
+import { useGetUserDataByUsernameQuery } from "../users/usersApiSlice";
 import useAuth from "../../hooks/useAuth";
 import PulseLoader from "react-spinners/PulseLoader";
 import useTitle from "../../hooks/useTitle";
@@ -10,24 +10,19 @@ const EditNote = () => {
   useTitle("Edit Note");
 
   const { id } = useParams();
-
-  const { username, isManager, isAdmin } = useAuth();
+  const { username } = useAuth();
 
   const { data: noteData, isLoading: isNoteLoading } = useGetNoteByIdQuery(id);
+  const { data: userData, isLoading: isUserLoading } =
+    useGetUserDataByUsernameQuery(username);
 
-  const { users, isLoading: isUsersLoading } = useGetUsersQuery("usersList", {
-    selectFromResult: ({ data, isLoading }) => ({
-      users: data?.ids.map((id) => data?.entities[id]),
-      isLoading,
-    }),
-  });
+  if (isNoteLoading || isUserLoading) return <PulseLoader color={"#FFF"} />;
 
-  if (isNoteLoading || isUsersLoading) return <PulseLoader color={"#FFF"} />;
+  if (!noteData?.note || !userData) return <p>Note or user data not found!</p>;
 
-  if (!noteData?.note || !users?.length) return <p>Note or users not found!</p>;
-
-  const content = <EditNoteForm note={noteData.note} users={users} />;
+  const content = <EditNoteForm note={noteData.note} user={userData} />;
 
   return content;
 };
+
 export default EditNote;
