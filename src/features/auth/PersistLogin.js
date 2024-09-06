@@ -2,16 +2,15 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useRefreshMutation } from "./authApiSlice";
 import usePersist from "../../hooks/usePersist";
-import { useSelector, useDispatch } from "react-redux"; // Added useDispatch
-import { selectCurrentToken } from "./authSlice";
-import { logOut } from "./authSlice"; // Assuming logOut is defined in authSlice
-import jwtDecode from "jwt-decode"; // Added jwtDecode import
-import Cookies from "js-cookie"; // Import js-cookie
+import { useSelector, useDispatch } from "react-redux";
+import { selectCurrentToken, logOut } from "./authSlice";
+import jwtDecode from "jwt-decode";
+import Cookies from "js-cookie";
 
 const PersistLogin = () => {
-  const dispatch = useDispatch(); // Initialize dispatch
+  const dispatch = useDispatch();
   const [persist] = usePersist();
-  const token = useSelector(selectCurrentToken) || Cookies.get("token"); // Get token from cookies if not in state
+  const token = useSelector(selectCurrentToken) || Cookies.get("token");
   const [isLoading, setIsLoading] = useState(true);
 
   const [refresh] = useRefreshMutation();
@@ -20,28 +19,37 @@ const PersistLogin = () => {
     const verifyRefreshToken = async () => {
       console.log("Verifying refresh token");
       try {
-        await refresh(); // Attempt to refresh the token
+        await refresh();
       } catch (err) {
         console.error(err);
-        // If refresh fails, log out the user
-        dispatch(logOut()); // Use dispatch here
+        dispatch(logOut());
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Always try to refresh the token, regardless of the persist value
     if (!token) {
       verifyRefreshToken();
     } else {
       setIsLoading(false);
     }
-  }, [token, refresh, dispatch]); // Added dependencies
 
-  dispatch(logOut()); // Log out if token is expired
+    // // Set up auto-logout
+    // const autoLogoutTimer = setTimeout(() => {
+    //   console.log("Auto-logout triggered");
+    //   dispatch(logOut());
+    // }, 30000); // 30 seconds
+
+    // return () => clearTimeout(autoLogoutTimer);
+  }, [token, refresh, dispatch]);
+
   // Check if the token is expired
-  if (token && Date.now() >= jwtDecode(token).exp * 1000) {
-    dispatch(logOut()); // Log out if token is expired
+  if (token) {
+    const decodedToken = jwtDecode(token);
+    if (Date.now() >= decodedToken.exp * 1000) {
+      console.log("Token expired, logging out");
+      dispatch(logOut());
+    }
   }
 
   if (isLoading) {

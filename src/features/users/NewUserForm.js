@@ -37,7 +37,8 @@ const NewUserForm = () => {
       setPassword("");
       setRecaptchaValue("");
       captchaRef.current.reset();
-      navigate("/dash/users");
+      alert("Successfully Created Account, Now You Can Sign In!");
+      navigate("/login");
     }
   }, [isSuccess, navigate]);
 

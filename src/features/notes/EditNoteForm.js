@@ -46,7 +46,7 @@ const EditNoteForm = ({ note, users }) => {
     useGetUserDataByUsernameQuery(note.username);
 
   const user = userData;
-  const note_owner = userData.username ? userData.username : "unknown user";
+  const note_owner = note.username ? note.username : "unknown user";
 
   const userId = user?.id;
   const [formData, setFormData] = useState({

@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import {
   useGetNotesQuery,
   useGetTrendingNotesQuery,
@@ -14,6 +20,7 @@ const NotesList = () => {
   const [view, setView] = useState("recent");
   const observerRef = useRef();
   const loadingRef = useRef(null);
+  const scrollPositionRef = useRef(0);
 
   const { username } = useAuth() || {};
 
@@ -37,10 +44,14 @@ const NotesList = () => {
         const newNotes = notesData.notes.ids.filter(
           (id) => !prevNotes.some((note) => note.id === id)
         );
-        return [...prevNotes, ...newNotes.map((id) => ({ id, page }))];
+        return [...prevNotes, ...newNotes.map((id) => ({ id }))];
       });
     }
-  }, [isSuccess, notesData, page, view]);
+  }, [isSuccess, notesData, view]);
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, scrollPositionRef.current);
+  }, [allNotes]);
 
   const loadMoreNotes = useCallback(() => {
     if (
@@ -49,6 +60,7 @@ const NotesList = () => {
       page < notesData.totalPages &&
       view === "recent"
     ) {
+      scrollPositionRef.current = window.pageYOffset;
       setPage((prevPage) => prevPage + 1);
     }
   }, [isLoading, notesData, page, view]);
@@ -78,8 +90,9 @@ const NotesList = () => {
 
   const handleViewChange = (newView) => {
     setView(newView);
-    setPage(1); // Reset page when changing views
-    setAllNotes([]); // Clear allNotes when changing views
+    setPage(1);
+    setAllNotes([]);
+    window.scrollTo(0, 0);
   };
 
   let content;
@@ -93,9 +106,7 @@ const NotesList = () => {
 
     if (view === "recent") {
       tableContent = allNotes.length ? (
-        allNotes.map(({ id, page }) => (
-          <Note key={`${id}-${page}`} noteId={id} />
-        ))
+        allNotes.map(({ id }) => <Note key={id} noteId={id} />)
       ) : (
         <p>No notes found</p>
       );

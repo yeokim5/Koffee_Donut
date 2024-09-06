@@ -20,11 +20,24 @@ import "react-toastify/dist/ReactToastify.css";
 import UserAccount from "./features/users/UserAccount";
 import SetUsername from "./components/SetUsrename";
 import About from "./components/About";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
+import { logOut } from "./features/auth/authSlice";
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>;
 
 function App() {
   useTitle("Koffee Donut");
   <ToastContainer />;
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // Check if the JWT cookie exists on app load
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      dispatch(logOut());
+    }
+  }, [dispatch]);
 
   return (
     <Routes>
