@@ -13,14 +13,10 @@ const EditNote = () => {
   const { username } = useAuth();
 
   const { data: noteData, isLoading: isNoteLoading } = useGetNoteByIdQuery(id);
-  const { data: userData, isLoading: isUserLoading } =
-    useGetUserDataByUsernameQuery(username);
 
-  if (isNoteLoading || isUserLoading) return <PulseLoader color={"#FFF"} />;
+  if (!noteData?.note) return <p>Note data not found!</p>;
 
-  if (!noteData?.note || !userData) return <p>Note or user data not found!</p>;
-
-  const content = <EditNoteForm note={noteData.note} user={userData} />;
+  const content = <EditNoteForm note={noteData.note} />;
 
   return content;
 };

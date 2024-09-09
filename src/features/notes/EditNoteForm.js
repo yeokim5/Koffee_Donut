@@ -29,7 +29,7 @@ import {
 import Comment from "../comments/Comment";
 import { AlignCenter } from "lucide-react";
 
-const EditNoteForm = ({ note, users }) => {
+const EditNoteForm = ({ note }) => {
   const { username } = useAuth();
   const [updateNote, { isLoading, isSuccess, isError, error }] =
     useUpdateNoteMutation();
@@ -40,7 +40,6 @@ const EditNoteForm = ({ note, users }) => {
   const [likeNote] = useLikeNoteMutation();
   const [dislikeNote] = useDislikeNoteMutation();
   const navigate = useNavigate();
-  // const { data: userData, isLoading: isUserDataLoading } = useGetUsersQuery();
 
   const { data: userData, isLoading: isUserDataLoading } =
     useGetUserDataByUsernameQuery(note.username);
