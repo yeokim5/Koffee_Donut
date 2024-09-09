@@ -10,7 +10,6 @@ const EditNote = () => {
   useTitle("Edit Note");
 
   const { id } = useParams();
-  const { username } = useAuth();
 
   const { data: noteData, isLoading: isNoteLoading } = useGetNoteByIdQuery(id);
 
