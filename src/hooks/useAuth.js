@@ -11,8 +11,6 @@ const useAuth = () => {
   let username = "";
   let roles = [];
 
-  console.log("Token:", token); // Debugging line
-
   if (token) {
     try {
       const decoded = jwtDecode(token);
@@ -21,9 +19,6 @@ const useAuth = () => {
         roles: decodedRoles,
         exp,
       } = decoded.UserInfo;
-
-      console.log("Decoded Token:", decoded); // Debugging line
-      console.log(decodedUsername);
 
       // Check if token is expired
       if (Date.now() >= exp * 1000) {

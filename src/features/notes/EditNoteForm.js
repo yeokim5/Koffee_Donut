@@ -68,6 +68,69 @@ const EditNoteForm = ({ note, users }) => {
   const [newCommentText, setNewCommentText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 3;
+  function logAllImages() {
+    // Set to keep track of logged images
+    const loggedImages = new Set();
+
+    // Function to log image source
+    function logImageSrc(img) {
+      if (!loggedImages.has(img.src)) {
+        console.log(img.src);
+        loggedImages.add(img.src);
+      }
+    }
+
+    // Log existing images
+    document.querySelectorAll("img").forEach((img) => {
+      if (img.complete) {
+        logImageSrc(img);
+      } else {
+        img.addEventListener("load", () => logImageSrc(img));
+      }
+    });
+
+    // Set up MutationObserver to watch for new images
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.tagName.toLowerCase() === "img") {
+              if (node.complete) {
+                logImageSrc(node);
+              } else {
+                node.addEventListener("load", () => logImageSrc(node));
+              }
+            } else {
+              node.querySelectorAll("img").forEach((img) => {
+                if (img.complete) {
+                  logImageSrc(img);
+                } else {
+                  img.addEventListener("load", () => logImageSrc(img));
+                }
+              });
+            }
+          }
+        });
+      });
+    });
+
+    // Start observing the entire document
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    console.log(
+      "Image logger is now running. New images will be logged as they appear."
+    );
+  }
+
+  // Run the function when the page loads
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", logAllImages);
+  } else {
+    logAllImages();
+  }
 
   useEffect(() => {
     if (commentsData) {
