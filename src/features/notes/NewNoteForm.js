@@ -4,6 +4,7 @@ import { useAddNewNoteMutation } from "./notesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import EditorComponent from "./EditorComponent";
+import { imageExtracter } from "../../features/image/imageExtracter";
 
 const NewNoteForm = ({ user }) => {
   const [addNewNote, { isLoading, isSuccess, isError, error }] =
@@ -33,10 +34,20 @@ const NewNoteForm = ({ user }) => {
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
+      let imageUrl;
+      if (editorContent) {
+        try {
+          imageUrl = await imageExtracter(JSON.stringify(editorContent));
+        } catch (error) {
+          console.error("Error extracting image URL:", error);
+        }
+      }
+
       await addNewNote({
         user: user.id,
         title,
         text: JSON.stringify(editorContent),
+        imageURL: imageUrl,
       });
     }
   };

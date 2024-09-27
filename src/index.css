@@ -683,8 +683,7 @@ tr {
 .note-image-container {
   display: flex;
   margin-right: 15px;
-  width: 80px; /* Change width to min-width */
-  height: 60px;
+  width: 80px;
   flex-shrink: 0; /* Prevent shrinking */
 }
 

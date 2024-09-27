@@ -90,10 +90,6 @@ const Note = ({ noteId }) => {
     cursor: "pointer",
   };
 
-  function extractImageUrl(jsonString) {
-    // ... existing extractImageUrl function ...
-  }
-
   return (
     <div className="note-list-container">
       <div className="note-item">
@@ -105,7 +101,7 @@ const Note = ({ noteId }) => {
           <div className="note-image">
             <img
               src={
-                extractImageUrl(note.text) ||
+                note.imageURL ||
                 "https://koffee-donut.s3.amazonaws.com/no+image.png"
               }
               alt="Note"
