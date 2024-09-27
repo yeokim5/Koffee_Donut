@@ -63,17 +63,19 @@ const getYoutubeImage = (url) => {
 };
 
 const getInstagramImage = async (url) => {
-  const postId =
-    url.match(/\/p\/([^/?]+)/)?.[1] || url.match(/\/reel\/([^/?]+)/)?.[1];
-  if (!postId) return null;
+  // const postId =
+  //   url.match(/\/p\/([^/?]+)/)?.[1] || url.match(/\/reel\/([^/?]+)/)?.[1];
+  // if (!postId) return null;
 
-  const imageUrl = `https://www.instagram.com/p/${postId}/media/?size=l`;
-  try {
-    return await getFinalRedirectedUrl(imageUrl);
-  } catch (error) {
-    console.error("Error getting Instagram image:", error);
-    return null;
-  }
+  // const imageUrl = `https://www.instagram.com/p/${postId}/media/?size=l`;
+  // try {
+  //   return await getFinalRedirectedUrl(imageUrl);
+  // } catch (error) {
+  //   console.error("Error getting Instagram image:", error);
+  //   return null;
+  // }
+
+  return "https://img.freepik.com/premium-vector/instagram-logo-vector_768467-330.jpg";
 };
 
 const getFinalRedirectedUrl = (url) => {
@@ -97,7 +99,7 @@ const getFinalRedirectedUrl = (url) => {
 
 const getTwitterImage = async (url) => {
   // TODO: Implement Twitter image extraction
-  return null;
+  return "https://banner2.cleanpng.com/20240119/sut/transparent-x-logo-logo-brand-identity-company-organization-black-background-white-x-logo-for-1710916376217.webp";
 };
 
 const getDefaultImageUrl = () =>

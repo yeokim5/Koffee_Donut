@@ -108,11 +108,9 @@ const Note = ({ noteId }) => {
             />
           </div>
         </div>
-        <div className="note-content">
+        <div className="note-content" onClick={viewNote}>
           <div className="note-title">
-            <a onClick={viewNote} style={linkStyle}>
-              {shortenTitle(note.title)}
-            </a>
+            <a style={linkStyle}>{shortenTitle(note.title)}</a>
           </div>
           <div className="note-details">
             <div className="note-username">
