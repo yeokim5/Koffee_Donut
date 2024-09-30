@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useLayoutEffect,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   useGetNotesQuery,
   useGetTrendingNotesQuery,
@@ -18,12 +12,9 @@ const NotesList = () => {
   const [page, setPage] = useState(1);
   const [allNotes, setAllNotes] = useState([]);
   const [view, setView] = useState("recent");
-  const observerRef = useRef();
   const loadingRef = useRef(null);
-  const scrollPositionRef = useRef(0);
 
-  const { username } = useAuth() || {};
-
+  const { username } = useAuth();
   const {
     data: notesData,
     isLoading,
@@ -31,13 +22,34 @@ const NotesList = () => {
     isError,
     error,
   } = useGetNotesQuery({ page, limit: 10 });
-
   const { data: trendingNotesData } = useGetTrendingNotesQuery();
   const { data: followingNotesData } = useGetFollowerNotesQuery(username);
 
   const trendingIds = trendingNotesData?.map((note) => note._id) || [];
   const followingIds = followingNotesData?.ids || [];
 
+  // Clear scroll position when the page is refreshed (start at top)
+  useEffect(() => {
+    // Check if the page was refreshed
+    if (performance.navigation.type === 1) {
+      sessionStorage.removeItem("scrollPosition"); // Reset scroll position on page refresh
+    }
+  }, []);
+
+  // Save scroll position on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem("scrollPosition", window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Restore scroll position when notes are updated (not on refresh)
   useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
       setAllNotes((prevNotes) => {
@@ -46,12 +58,14 @@ const NotesList = () => {
         );
         return [...prevNotes, ...newNotes.map((id) => ({ id }))];
       });
+
+      // Restore scroll position (but only if not a refresh)
+      const savedPosition = sessionStorage.getItem("scrollPosition");
+      if (savedPosition) {
+        window.scrollTo(0, parseFloat(savedPosition));
+      }
     }
   }, [isSuccess, notesData, view]);
-
-  useLayoutEffect(() => {
-    window.scrollTo(0, scrollPositionRef.current);
-  }, [allNotes]);
 
   const loadMoreNotes = useCallback(() => {
     if (
@@ -60,113 +74,82 @@ const NotesList = () => {
       page < notesData.totalPages &&
       view === "recent"
     ) {
-      scrollPositionRef.current = window.pageYOffset;
       setPage((prevPage) => prevPage + 1);
     }
   }, [isLoading, notesData, page, view]);
 
+  // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreNotes();
-        }
+        if (entries[0].isIntersecting) loadMoreNotes();
       },
       { threshold: 1.0 }
     );
 
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
-
-    observerRef.current = observer;
+    if (loadingRef.current) observer.observe(loadingRef.current);
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      if (loadingRef.current) observer.unobserve(loadingRef.current);
+      observer.disconnect();
     };
-  }, [loadMoreNotes]);
+  }, [loadingRef, loadMoreNotes]);
 
   const handleViewChange = (newView) => {
     setView(newView);
     setPage(1);
     setAllNotes([]);
-    window.scrollTo(0, 0);
   };
 
-  let content;
+  const renderNotes = () => {
+    const noteIds = {
+      recent: allNotes.map((note) => note.id),
+      trend: trendingIds,
+      following: followingIds,
+    }[view];
 
-  if (isError) {
-    content = <p className="errmsg">{error?.data?.message}</p>;
-  }
-
-  if (isSuccess) {
-    let tableContent;
-
-    if (view === "recent") {
-      tableContent = allNotes.length ? (
-        allNotes.map(({ id }) => <Note key={id} noteId={id} />)
-      ) : (
-        <p>No notes found</p>
-      );
-    } else if (view === "trend") {
-      tableContent = trendingIds.length ? (
-        trendingIds.map((id) => <Note key={id} noteId={id} />)
-      ) : (
-        <p>No trending notes found</p>
-      );
-    } else if (view === "following") {
-      tableContent = followingIds.length ? (
-        followingIds.map((id) => <Note key={id} noteId={id} />)
-      ) : (
-        <p>No following notes found</p>
-      );
-    }
-
-    content = (
-      <>
-        <div className="view-selector">
-          <button
-            onClick={() => handleViewChange("recent")}
-            className={view === "recent" ? "active" : ""}
-          >
-            Recent
-          </button>
-          <button
-            onClick={() => handleViewChange("trend")}
-            className={view === "trend" ? "active" : ""}
-          >
-            Trending
-          </button>
-          {username && (
-            <button
-              onClick={() => handleViewChange("following")}
-              className={view === "following" ? "active" : ""}
-            >
-              Following
-            </button>
-          )}
-        </div>
-        <div className="notes-list">
-          {tableContent}
-          {view === "recent" && (
-            <div ref={loadingRef}>
-              {isLoading && <PulseLoader color={"#FFF"} />}
-              {!isLoading && page < notesData.totalPages && (
-                <p style={{ textAlign: "center" }}>
-                  <PulseLoader />
-                </p>
-              )}
-              {page >= notesData.totalPages && <p> </p>}
-            </div>
-          )}
-        </div>
-      </>
+    return noteIds.length ? (
+      noteIds.map((id) => <Note key={id} noteId={id} />)
+    ) : (
+      <p>No {view} notes found</p>
     );
-  }
+  };
 
-  return content;
+  console.log(window.scrollY);
+  if (isError) return <p className="errmsg">{error?.data?.message}</p>;
+
+  if (!isSuccess) return null;
+
+  return (
+    <>
+      <div className="view-selector">
+        {["recent", "trend", ...(username ? ["following"] : [])].map(
+          (viewOption) => (
+            <button
+              key={viewOption}
+              onClick={() => handleViewChange(viewOption)}
+              className={view === viewOption ? "active" : ""}
+            >
+              {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
+            </button>
+          )
+        )}
+      </div>
+      <div className="notes-list">
+        {renderNotes()}
+        {view === "recent" && (
+          <div ref={loadingRef}>
+            {isLoading && <PulseLoader color={"#FFF"} />}
+            {!isLoading && page < notesData.totalPages && (
+              <p style={{ textAlign: "center" }}>
+                <PulseLoader />
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default NotesList;

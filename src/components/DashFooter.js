@@ -5,23 +5,23 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const DashFooter = () => {
-  const { username, status, isAuthenticated } = useAuth();
+  const { username, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const onGoHomeClicked = async () => {
     if (!username) {
-      alert("User need to Login");
+      alert("User needs to Login");
     } else {
-      navigate(`dash/users/${username}`);
+      navigate(`/dash/users/${username}`);
     }
   };
 
   const onGoBackClicked = () => {
-    navigate(-1);
+    window.close();
   };
 
-  const shouldShowGoBackButton = pathname !== "/";
+  const shouldShowGoBackButton = /^\/dash\/notes\/[a-zA-Z0-9]+$/.test(pathname);
 
   let goHomeButton = (
     <button
@@ -36,9 +36,10 @@ const DashFooter = () => {
   let goBackButton = shouldShowGoBackButton ? (
     <button
       className="dash-footer__button icon-button go-back"
-      title="Go Back"
+      title="Close"
       onClick={onGoBackClicked}
     >
+      <p>Close</p>
       <FontAwesomeIcon icon={faArrowLeft} />
     </button>
   ) : null;

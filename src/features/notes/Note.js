@@ -76,7 +76,7 @@ const Note = ({ noteId }) => {
       setVisitedNotes(visitedNotes);
       setIsVisited(true);
     }
-    navigate(`/dash/notes/${noteId}`);
+    window.open(`/dash/notes/${noteId}`, "_blank");
   };
 
   const viewUserAccount = () =>
