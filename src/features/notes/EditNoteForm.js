@@ -69,6 +69,8 @@ const EditNoteForm = ({ note, users }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 3;
 
+  window.scrollTo(0, 0);
+
   useEffect(() => {
     if (commentsData) {
       const sortedComments = [...commentsData].sort(
