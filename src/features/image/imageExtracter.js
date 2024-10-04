@@ -41,7 +41,7 @@ const extractUrls = (editorContent) => {
         urls.push(block.data.file.url);
       }
     });
-
+    console.log(urls);
     return urls;
   } catch (error) {
     console.error("Error parsing editorContent:", error);

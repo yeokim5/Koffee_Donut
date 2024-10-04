@@ -60,11 +60,17 @@ export const notesApiSlice = apiSlice.injectEndpoints({
     }),
     deleteNote: builder.mutation({
       query: ({ id }) => ({
-        url: `/notes`,
+        url: `/notes/${id}`,
         method: "DELETE",
-        body: { id },
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+    }),
+    deleteImage: builder.mutation({
+      query: (imageUrl) => ({
+        url: "/notes/delete-image",
+        method: "POST",
+        body: { imageUrl },
+      }),
     }),
     likeNote: builder.mutation({
       query: ({ id, userId }) => ({
@@ -155,4 +161,5 @@ export const {
   useGetNotesByUsernameQuery,
   useGetTrendingNotesQuery,
   useGetFollowerNotesQuery,
+  useDeleteImageMutation,
 } = notesApiSlice;

@@ -29,13 +29,29 @@ const shortenUsername = (title, maxLength = 13) => {
 
 // Helper functions for localStorage management
 const setVisitedNotes = (value) => {
-  localStorage.setItem("visitedNotes", JSON.stringify(value));
+  const data = {
+    notes: value,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem("visitedNotes", JSON.stringify(data));
 };
 
 const getVisitedNotes = () => {
-  const visitedNotes = localStorage.getItem("visitedNotes");
-  return visitedNotes ? JSON.parse(visitedNotes) : [];
+  const visitedNotesData = localStorage.getItem("visitedNotes");
+  if (visitedNotesData) {
+    const { notes, timestamp } = JSON.parse(visitedNotesData);
+    const now = Date.now();
+    const hoursPassed = (now - timestamp) / (1000 * 60 * 60);
+
+    if (hoursPassed < 2) {
+      return notes;
+    } else {
+      localStorage.removeItem("visitedNotes");
+    }
+  }
+  return [];
 };
+
 const Note = ({ noteId }) => {
   const {
     data: noteData,
@@ -79,10 +95,12 @@ const Note = ({ noteId }) => {
     navigate(`/dash/notes/${noteId}`);
   };
 
-  const viewUserAccount = () =>
+  const viewUserAccount = (event) => {
+    event.stopPropagation(); // Prevent the event from bubbling up to the parent
     navigate(`/dash/users/${note.username}`, {
       state: { username: note.username },
     });
+  };
 
   const linkStyle = {
     color: isVisited ? "rgb(75, 178, 215)" : "black",
@@ -108,14 +126,16 @@ const Note = ({ noteId }) => {
             />
           </div>
         </div>
-        <div className="note-content" onClick={viewNote}>
+        <div onClick={viewNote} className="note-content">
           <div className="note-title">
             <a style={linkStyle}>{shortenTitle(note.title)}</a>
           </div>
           <div className="note-details">
             <div className="note-username">
               {createdRelative} /{" "}
-              <a onClick={viewUserAccount}>{shortenUsername(note.username)}</a>
+              <a onClick={viewUserAccount} style={{ cursor: "pointer" }}>
+                {shortenUsername(note.username)}
+              </a>
             </div>
           </div>
         </div>

@@ -17,6 +17,8 @@ const NewNoteForm = ({ user }) => {
 
   useEffect(() => {
     if (isSuccess) {
+      sessionStorage.setItem("scrollPosition", 0);
+      sessionStorage.removeItem("notesListState");
       setTitle("");
       setEditorContent(null);
       navigate("/");

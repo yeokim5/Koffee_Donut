@@ -10,6 +10,10 @@ import { useGetNotesByUsernameQuery } from "../notes/notesApiSlice";
 import Note from "../notes/Note";
 
 const UserAccount = () => {
+  /* reset scroll to prevent bug */
+  // sessionStorage.setItem("scrollPosition", 0);
+  // sessionStorage.removeItem("notesListState");
+
   const [followUser] = useFollowUserMutation();
   const [unFollowUser] = useUnFollowUserMutation();
   const { username: profileUsername } = useParams();

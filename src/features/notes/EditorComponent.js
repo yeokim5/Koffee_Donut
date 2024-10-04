@@ -145,16 +145,29 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
           if (!readMode) {
             let content = await editor.saver.save();
 
-            // Check if the last block is a text block
-            const lastBlock = content.blocks[content.blocks.length - 1];
-            if (lastBlock.type !== "paragraph" || !lastBlock.data.text.trim()) {
-              // If not, add an empty text block
+            // Check if there are no blocks
+            if (content.blocks.length === 0) {
+              // Add a text block with "You Can't Leave Note Empty"
               content.blocks.push({
                 type: "paragraph",
                 data: {
-                  text: "",
+                  text: "Empty",
                 },
               });
+            } else {
+              // Existing logic for adding an empty paragraph at the end
+              const lastBlock = content.blocks[content.blocks.length - 1];
+              if (
+                lastBlock.type !== "paragraph" ||
+                !lastBlock.data.text.trim()
+              ) {
+                content.blocks.push({
+                  type: "paragraph",
+                  data: {
+                    text: "",
+                  },
+                });
+              }
             }
 
             onChange(content);

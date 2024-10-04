@@ -83,6 +83,8 @@ const EditNoteForm = ({ note, users }) => {
 
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
+      sessionStorage.removeItem("notesListState");
+      sessionStorage.removeItem("scrollPosition");
       setFormData({ title: "", editorContent: null, userId: "" });
       navigate("/");
     }
@@ -96,8 +98,33 @@ const EditNoteForm = ({ note, users }) => {
     }));
   }, []);
 
+  const [deletedImages, setDeletedImages] = useState([]);
+
   const handleEditorChange = useCallback((content) => {
-    setFormData((prev) => ({ ...prev, editorContent: content }));
+    setFormData((prev) => {
+      const prevImageBlocks = prev.editorContent.blocks.filter(
+        (block) => block.type === "image"
+      );
+      const newImageBlocks = content.blocks.filter(
+        (block) => block.type === "image"
+      );
+
+      // Extract the URLs from both old and new image blocks
+      const prevImageUrls = prevImageBlocks.map((block) => block.data.file.url);
+      const newImageUrls = newImageBlocks.map((block) => block.data.file.url);
+
+      // Find the URL that is missing from the new content
+      const deletedImageUrl = prevImageUrls.find(
+        (prevUrl) => !newImageUrls.includes(prevUrl)
+      );
+
+      if (deletedImageUrl) {
+        console.log("This is the URL that has to be deleted:", deletedImageUrl);
+        setDeletedImages((prev) => [...prev, deletedImageUrl]); // Store the deleted image URL
+      }
+
+      return { ...prev, editorContent: content };
+    });
   }, []);
 
   const canSave = useMemo(() => {
@@ -122,6 +149,32 @@ const EditNoteForm = ({ note, users }) => {
         }
       }
 
+      // Delete images before saving the note
+      if (deletedImages.length > 0) {
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/notes/delete-images`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ fileNames: deletedImages }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Failed to delete images:", errorData.error);
+          } else {
+            console.log("Deleted images successfully");
+          }
+        } catch (error) {
+          console.error("Error deleting images:", error);
+        }
+      }
+
+      // Save the updated note
       await updateNote({
         id: note.id,
         user: userId,
@@ -130,6 +183,9 @@ const EditNoteForm = ({ note, users }) => {
         completed: formData.completed,
         imageURL: imageUrl,
       });
+
+      // Clear the deletedImages array
+      setDeletedImages([]);
     }
   };
 
@@ -152,7 +208,7 @@ const EditNoteForm = ({ note, users }) => {
       // After successful note deletion, delete associated images if any exist
       if (fileNames.length > 0) {
         const response = await fetch(
-          process.env.REACT_APP_BACKEND_URL + "/deleteImages",
+          process.env.REACT_APP_BACKEND_URL + "/notes/delete-images",
           {
             method: "DELETE",
             headers: {
