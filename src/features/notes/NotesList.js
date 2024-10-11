@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   useGetNotesQuery,
@@ -14,10 +20,11 @@ const NotesList = () => {
   const [allNotes, setAllNotes] = useState([]);
   const [view, setView] = useState("recent");
   const loadingRef = useRef(null);
-  const listRef = useRef(null);
   const location = useLocation();
   const scrollPositionRef = useRef(0);
   const isLoadingRef = useRef(false);
+  const previousHeightRef = useRef(0); // For storing previous page height
+  const navigate = useNavigate();
 
   const { username } = useAuth();
   const {
@@ -51,7 +58,7 @@ const NotesList = () => {
     };
   }, [view, page, allNotes]);
 
-  // Modify the existing useEffect for saving and restoring scroll position
+  // Save and restore scroll position on location change
   useEffect(() => {
     const handleScroll = () => {
       if (!isLoadingRef.current) {
@@ -64,20 +71,16 @@ const NotesList = () => {
       if (savedPosition !== null) {
         setTimeout(() => {
           window.scrollTo(0, parseFloat(savedPosition));
-          console.log("Restored scroll to", savedPosition);
         }, 0);
       }
     };
 
-    // Add scroll event listener
     window.addEventListener("scroll", handleScroll);
 
-    // Restore scroll position on location changes
     if (!isLoadingRef.current) {
       restoreScrollPosition();
     }
 
-    // Clean up function
     return () => {
       window.removeEventListener("scroll", handleScroll);
       if (!isLoadingRef.current) {
@@ -85,12 +88,11 @@ const NotesList = () => {
           "scrollPosition",
           scrollPositionRef.current.toString()
         );
-        console.log("Saved scroll position", scrollPositionRef.current);
       }
     };
   }, [location]);
 
-  // Modify the loadMoreNotes function
+  // Load more notes with scroll position tracking
   const loadMoreNotes = useCallback(() => {
     if (
       !isLoading &&
@@ -99,6 +101,7 @@ const NotesList = () => {
       view === "recent"
     ) {
       isLoadingRef.current = true;
+      previousHeightRef.current = document.body.scrollHeight; // Capture current height before loading
       setPage((prevPage) => prevPage + 1);
     }
   }, [isLoading, notesData, page, view]);
@@ -111,11 +114,20 @@ const NotesList = () => {
           (id) => !prevNotes.some((note) => note.id === id)
         );
         const updatedNotes = [...prevNotes, ...newNotes.map((id) => ({ id }))];
-        isLoadingRef.current = false;
         return updatedNotes;
       });
     }
   }, [isSuccess, notesData, view]);
+
+  // Adjust scroll position after notes are updated
+  useLayoutEffect(() => {
+    if (isLoadingRef.current) {
+      const newHeight = document.body.scrollHeight;
+      const heightDifference = newHeight - previousHeightRef.current; // Difference in height
+      window.scrollTo(0, scrollPositionRef.current + heightDifference); // Adjust scroll position
+      isLoadingRef.current = false;
+    }
+  }, [allNotes]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -138,7 +150,6 @@ const NotesList = () => {
     setView(newView);
     setPage(1);
     setAllNotes([]);
-    // Reset scroll position when changing views
     window.scrollTo(0, 0);
     sessionStorage.removeItem("scrollPosition");
   };
@@ -151,9 +162,20 @@ const NotesList = () => {
     }[view];
 
     return noteIds.length ? (
-      noteIds.map((id) => <Note key={id} noteId={id} />)
+      noteIds.map((id) => (
+        <div key={id} onClick={() => handleNoteClick(id)}>
+          <Note noteId={id} />
+        </div>
+      ))
     ) : (
       <p>No {view} notes found</p>
+    );
+  };
+
+  const handleNoteClick = (noteId) => {
+    sessionStorage.setItem(
+      "scrollPosition",
+      scrollPositionRef.current.toString()
     );
   };
 
@@ -176,7 +198,7 @@ const NotesList = () => {
           )
         )}
       </div>
-      <div className="notes-list" ref={listRef}>
+      <div className="notes-list">
         {renderNotes()}
         {view === "recent" && (
           <div ref={loadingRef}>
