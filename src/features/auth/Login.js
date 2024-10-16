@@ -35,6 +35,8 @@ const Login = () => {
     e.preventDefault();
     try {
       const { accessToken } = await login({ username, password }).unwrap();
+      sessionStorage.removeItem("notesListState");
+      sessionStorage.removeItem("scrollPosition");
       dispatch(setCredentials({ accessToken }));
       setUsername("");
       setPassword("");

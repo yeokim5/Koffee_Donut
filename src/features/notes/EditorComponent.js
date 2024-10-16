@@ -1,3 +1,44 @@
+// Creating Note
+// 1. when upload a image
+// 	1. go to different url(without pressing save) : all the image i uploaded get's deleted
+// 	1. scenario: i'm creating an note. and uplaoded an image but i went back to different url without pressing save button.
+// 		=> the image will be uploaded in the aws bucket. so i should store the image url that has been uploaded to "deleted image url", and execute whenever i leave the website by not clicking "save".
+
+// 1. when i delete a image while creating a note
+// 	1. store in "delete image url" that execute when i go to different url.
+// 	1. scenario: i'm creating a note. and uploaded an image but i don't like the image so i delete the image on the process of creating.
+
+// Editing Note
+// 1. when editing a note
+// 	1. scenario: while editing a note i added an image but didn't press save. the new images will be deleted.
+// 	2. scenario: i deleted an image and store in "delete image url" but didn't press save, it will not delete the iamge.
+
+// Deleting Note
+// 	1. it will delete all of the image in the note.
+
+// 1. in my NewNoteForm.js
+// whenever i upload a image, the image i just  uploaded should be stored in "deleted image url"
+// 2. the deletion logic should be executed if i leave the url or close the tab without saving, but if i saved the delted image url will be set to [].
+
+// fetch(`${process.env.REACT_APP_BACKEND_URL}/notes/delete-images`, {
+//   method: "DELETE",
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+//   body: JSON.stringify({ fileNames: deletedImages }),
+// })
+//   .then((response) => {
+//     if (!response.ok) {
+//       return response.json().then((errorData) => {
+//         throw new Error(errorData.error);
+//       });
+//     }
+//     console.log("Deleted images successfully");
+//   })
+//   .catch((error) => {
+//     console.error("Error deleting images:", error);
+//   });
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
@@ -34,6 +75,12 @@ const EDITOR_JS_TOOLS = {
             })
             .then((result) => {
               console.log("Server success response:", result);
+              console.log(
+                "This image should be stored in deltedImages",
+                result.file.url
+              );
+              // Update pendingImage in localStorage
+              updatePendingImages(result.file.url);
               if (result.success === 0) {
                 throw new Error(result.error || "Upload failed");
               }
@@ -72,6 +119,8 @@ const EDITOR_JS_TOOLS = {
             })
             .then((result) => {
               console.log("Server response:", result);
+              // Update pendingImage in localStorage
+              updatePendingImages(result.file.url);
               if (result.success === 0) {
                 throw new Error(result.error || "Upload failed");
               }
@@ -127,6 +176,15 @@ const EDITOR_JS_TOOLS = {
     },
   },
 };
+
+// Add this function outside of EDITOR_JS_TOOLS
+function updatePendingImages(newImageUrl) {
+  const existingImages = JSON.parse(
+    localStorage.getItem("pendingImage") || "[]"
+  );
+  const updatedImages = [...existingImages, newImageUrl];
+  localStorage.setItem("pendingImage", JSON.stringify(updatedImages));
+}
 
 const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef(null);

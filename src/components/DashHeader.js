@@ -29,6 +29,11 @@ const DashHeader = () => {
   const [sendLogout, { isLoading, isSuccess, isError, error }] =
     useSendLogoutMutation();
 
+  const deleteSession = () => {
+    sessionStorage.removeItem("notesListState");
+    sessionStorage.removeItem("scrollPosition");
+  };
+
   useEffect(() => {
     if (isSuccess) navigate("/");
   }, [isSuccess, navigate]);
@@ -82,7 +87,7 @@ const DashHeader = () => {
 
   const logoutButton = (
     <button className="icon-button" title="Logout" onClick={sendLogout}>
-      <CiLogout />
+      <CiLogout onClick={deleteSession} />
     </button>
   );
 
