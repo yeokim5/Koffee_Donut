@@ -19,6 +19,7 @@ const NewNoteForm = ({ user }) => {
     if (isSuccess) {
       sessionStorage.setItem("scrollPosition", 0);
       sessionStorage.removeItem("notesListState");
+      localStorage.setItem("pendingImage", JSON.stringify([]));
       setTitle("");
       setEditorContent(null);
       navigate("/");

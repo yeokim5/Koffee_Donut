@@ -39,6 +39,58 @@ function App() {
     }
   }, [dispatch]);
 
+  const cleanupPendingImages = async () => {
+    try {
+      // Get pending images from local storage
+      const pendingImages = JSON.parse(
+        localStorage.getItem("pendingImage") || "[]"
+      );
+
+      if (pendingImages.length === 0) return;
+
+      // Extract just the filenames from the full URLs
+      const fileNames = pendingImages
+        .map((url) => {
+          try {
+            return url.split("/").pop();
+          } catch (error) {
+            console.error("Error parsing URL:", url);
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      // Delete the images
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/delete-images`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fileNames }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete images");
+      }
+
+      // Clear pending images from local storage after successful deletion
+      localStorage.setItem("pendingImage", JSON.stringify([]));
+      console.log("Successfully cleaned up pending images");
+    } catch (error) {
+      console.error("Error cleaning up pending images:", error);
+      toast.error(`Failed to clean up pending images: ${error.message}`);
+    }
+  };
+
+  // Modified useEffect in App.js
+  useEffect(() => {
+    cleanupPendingImages();
+  }, []);
+
   return (
     <Routes>
       <Route element={<PersistLogin />}>

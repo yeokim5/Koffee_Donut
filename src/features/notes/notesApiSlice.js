@@ -62,6 +62,7 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       query: ({ id }) => ({
         url: `/notes/${id}`,
         method: "DELETE",
+        // Remove body since we're sending ID in URL
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
     }),
