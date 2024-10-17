@@ -7,6 +7,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { store } from "./app/store";
 import { Provider } from "react-redux";
 import { disableReactDevTools } from "@fvilers/disable-react-devtools";
+import ReactGA from "react-ga4";
+
+ReactGA.initialize("G-13Q5NJLTF7");
+
+// Send pageview with a custom path
+ReactGA.send({
+  hitType: "pageview",
+  page: window.location.pathname,
+  title: "Custom Title",
+});
 
 if (process.env.NODE_ENV === "production") disableReactDevTools();
 
