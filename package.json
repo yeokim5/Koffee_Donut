@@ -20,6 +20,7 @@
     "disqus-react": "^1.1.5",
     "easymde": "2.16.0",
     "firebase": "^10.12.3",
+    "js-cookie": "^3.0.5",
     "jsdom": "^25.0.1",
     "jwt-decode": "^3.1.2",
     "lucide-react": "^0.407.0",
@@ -38,8 +39,7 @@
     "react-scripts": "5.0.1",
     "react-simplemde-editor": "^5.2.0",
     "react-spinners": "^0.13.8",
-    "react-toastify": "^10.0.5",
-    "js-cookie": "^3.0.5"
+    "react-toastify": "^10.0.5"
   },
   "scripts": {
     "start": "react-scripts start",
