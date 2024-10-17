@@ -9,7 +9,7 @@ import { Provider } from "react-redux";
 import { disableReactDevTools } from "@fvilers/disable-react-devtools";
 import ReactGA from "react-ga4";
 
-ReactGA.initialize("G-13Q5NJLTF7");
+ReactGA.initialize("G-S8KBDVQ9ZL");
 
 // Send pageview with a custom path
 ReactGA.send({
