@@ -1,4 +1,5 @@
 import React from "react";
+import { LuEye } from "react-icons/lu";
 import { useGetNoteByIdQuery } from "./notesApiSlice";
 import PulseLoader from "react-spinners/PulseLoader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -132,10 +133,17 @@ const Note = ({ noteId }) => {
           </div>
           <div className="note-details">
             <div className="note-username">
-              {createdRelative} /{" "}
               <a onClick={viewUserAccount} style={{ cursor: "pointer" }}>
                 {shortenUsername(note.username)}
               </a>
+              &nbsp;/&nbsp;
+              {createdRelative}
+              <span className="icon-text">
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <LuEye />
+                &nbsp;&nbsp;
+              </span>
+              {note.views}
             </div>
           </div>
         </div>

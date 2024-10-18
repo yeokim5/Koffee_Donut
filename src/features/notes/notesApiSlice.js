@@ -148,6 +148,14 @@ export const notesApiSlice = apiSlice.injectEndpoints({
         } else return [{ type: "Note", id: "FOLLOWER_LIST" }];
       },
     }),
+
+    incrementViews: builder.mutation({
+      query: (id) => ({
+        url: `/notes/${id}/views`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg }],
+    }),
   }),
 });
 
@@ -163,4 +171,5 @@ export const {
   useGetTrendingNotesQuery,
   useGetFollowerNotesQuery,
   useDeleteImageMutation,
+  useIncrementViewsMutation,
 } = notesApiSlice;

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { LuEye } from "react-icons/lu";
 import {
   useUpdateNoteMutation,
   useDeleteNoteMutation,
   useLikeNoteMutation,
   useDislikeNoteMutation,
+  useIncrementViewsMutation,
 } from "./notesApiSlice";
 import {
   useGetCommentsQuery,
@@ -69,6 +71,20 @@ const EditNoteForm = ({ note, users }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 3;
   const [deletedImages, setDeletedImages] = useState([]);
+  const [incrementViews] = useIncrementViewsMutation();
+
+  useEffect(() => {
+    const incrementViewCount = async () => {
+      try {
+        await incrementViews(note.id).unwrap();
+      } catch (err) {
+        console.error("Failed to increment view count:", err);
+      }
+    };
+
+    // Only increment views when first loading the note
+    incrementViewCount();
+  }, [note.id, incrementViews]);
 
   window.scrollTo(0, 0);
 
@@ -477,12 +493,18 @@ const EditNoteForm = ({ note, users }) => {
         ) : (
           <>
             <h3>{formData.title}</h3>
-            <h5>
-              {isUserDataLoading ? (
-                "Loading user data..."
-              ) : (
-                <Link to={`/dash/users/${note_owner}`}>{note_owner}</Link>
-              )}
+            <h5 style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>
+                {isUserDataLoading ? (
+                  "Loading user data..."
+                ) : (
+                  <Link to={`/dash/users/${note_owner}`}>{note_owner}</Link>
+                )}
+              </span>
+              <span className="icon-text">
+                <LuEye />
+                &nbsp; {note.views || 0}
+              </span>
             </h5>
           </>
         )}

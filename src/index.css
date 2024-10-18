@@ -749,6 +749,17 @@ note-title a:hover {
   font-size: 0.9rem;
 }
 
+.note-username {
+  display: flex;
+  align-items: center; /* Vertically center items */
+}
+
+.icon-text {
+  display: flex;
+  align-items: center; /* Vertically center items */
+  padding-top: 1px; /* Adjust the value to nudge down */
+}
+
 .list-like {
   display: flex;
   flex-direction: column;
