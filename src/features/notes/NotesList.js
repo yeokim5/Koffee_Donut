@@ -153,7 +153,6 @@ const NotesList = () => {
     window.scrollTo(0, 0);
     sessionStorage.removeItem("scrollPosition");
   };
-
   const renderNotes = () => {
     const noteIds = {
       recent: allNotes.map((note) => note.id),
@@ -163,9 +162,19 @@ const NotesList = () => {
 
     return noteIds.length ? (
       noteIds.map((id) => (
-        <div key={id} onClick={() => handleNoteClick(id)}>
+        <a
+          key={id}
+          href={`/dash/notes/${id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => {
+            e.preventDefault();
+            handleNoteClick(id);
+          }}
+          style={{ textDecoration: "none", color: "inherit", display: "block" }}
+        >
           <Note noteId={id} />
-        </div>
+        </a>
       ))
     ) : (
       <p>No {view} notes found</p>

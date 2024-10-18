@@ -96,13 +96,6 @@ const Note = ({ noteId }) => {
     navigate(`/dash/notes/${noteId}`);
   };
 
-  const viewUserAccount = (event) => {
-    event.stopPropagation(); // Prevent the event from bubbling up to the parent
-    navigate(`/dash/users/${note.username}`, {
-      state: { username: note.username },
-    });
-  };
-
   const linkStyle = {
     color: isVisited ? "rgb(75, 178, 215)" : "black",
     textDecoration: "none",
@@ -129,13 +122,11 @@ const Note = ({ noteId }) => {
         </div>
         <div onClick={viewNote} className="note-content">
           <div className="note-title">
-            <a style={linkStyle}>{shortenTitle(note.title)}</a>
+            <a>{shortenTitle(note.title)}</a>
           </div>
           <div className="note-details">
             <div className="note-username">
-              <a onClick={viewUserAccount} style={{ cursor: "pointer" }}>
-                {shortenUsername(note.username)}
-              </a>
+              <div>{shortenUsername(note.username)}</div>
               &nbsp;/&nbsp;
               {createdRelative}
               <span className="icon-text">

@@ -664,6 +664,10 @@ tr {
   margin: 0 auto; /* Centers the container horizontally */
 }
 
+.note-list-container:hover {
+  background-color: #f1f1f1;
+}
+
 @media (max-width: 768px) {
   .note-list-container {
     width: 100%; /* Full width on smaller screens */

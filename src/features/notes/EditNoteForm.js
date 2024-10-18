@@ -75,18 +75,25 @@ const EditNoteForm = ({ note, users }) => {
 
   useEffect(() => {
     const incrementViewCount = async () => {
-      try {
-        await incrementViews(note.id).unwrap();
-      } catch (err) {
-        console.error("Failed to increment view count:", err);
+      const lastViewTimestamp = localStorage.getItem(`lastView_${note.id}`);
+      const currentTime = Date.now();
+      const viewCooldown = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+      if (
+        !lastViewTimestamp ||
+        currentTime - parseInt(lastViewTimestamp) > viewCooldown
+      ) {
+        try {
+          await incrementViews(note.id).unwrap();
+          localStorage.setItem(`lastView_${note.id}`, currentTime.toString());
+        } catch (err) {
+          console.error("Failed to increment view count:", err);
+        }
       }
     };
 
-    // Only increment views when first loading the note
     incrementViewCount();
   }, [note.id, incrementViews]);
-
-  window.scrollTo(0, 0);
 
   useEffect(() => {
     if (commentsData) {
