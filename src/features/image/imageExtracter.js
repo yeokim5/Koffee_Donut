@@ -1,13 +1,16 @@
 export const imageExtracter = async (editorContent) => {
   const urls = extractUrls(editorContent);
+  console.log("urls", urls);
   return await getFirstValidImageUrl(urls);
 };
 
 const getFirstValidImageUrl = async (urls) => {
-  for (const url of urls) {
-    const imageUrl = await getImageUrl(url);
-    if (imageUrl) return imageUrl;
+  if (urls.length > 0) {
+    const firstUrl = urls[0];
+    console.log(`imageUrl`, firstUrl);
+    return firstUrl;
   }
+
   return getDefaultImageUrl();
 };
 
@@ -54,7 +57,7 @@ const urlCheckers = {
     url.includes("youtube.com") || url.includes("youtu.be"),
   isInstagramUrl: (url) => url.includes("instagram.com"),
   isTwitterUrl: (url) => url.includes("x.com") || url.includes("twitter.com"),
-  isDirectImageUrl: (url) => /\.(png|jpg|jpeg)$/i.test(url),
+  isDirectImageUrl: (url) => /\.(png|jpg|jpeg|webp)$/i.test(url),
 };
 
 const getYoutubeImage = (url) => {
@@ -63,42 +66,10 @@ const getYoutubeImage = (url) => {
 };
 
 const getInstagramImage = async (url) => {
-  // const postId =
-  //   url.match(/\/p\/([^/?]+)/)?.[1] || url.match(/\/reel\/([^/?]+)/)?.[1];
-  // if (!postId) return null;
-
-  // const imageUrl = `https://www.instagram.com/p/${postId}/media/?size=l`;
-  // try {
-  //   return await getFinalRedirectedUrl(imageUrl);
-  // } catch (error) {
-  //   console.error("Error getting Instagram image:", error);
-  //   return null;
-  // }
-
   return "https://img.freepik.com/premium-vector/instagram-logo-vector_768467-330.jpg";
 };
 
-const getFinalRedirectedUrl = (url) => {
-  return new Promise((resolve, reject) => {
-    // If using https, replace with fetch or another browser-compatible method
-    fetch(url)
-      .then((response) => {
-        if (
-          response.status >= 300 &&
-          response.status < 400 &&
-          response.headers.get("location")
-        ) {
-          resolve(getFinalRedirectedUrl(response.headers.get("location")));
-        } else {
-          resolve(url);
-        }
-      })
-      .catch((error) => reject(error));
-  });
-};
-
 const getTwitterImage = async (url) => {
-  // TODO: Implement Twitter image extraction
   return "https://banner2.cleanpng.com/20240119/sut/transparent-x-logo-logo-brand-identity-company-organization-black-background-white-x-logo-for-1710916376217.webp";
 };
 

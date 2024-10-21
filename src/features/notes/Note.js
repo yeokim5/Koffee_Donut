@@ -111,15 +111,26 @@ const Note = ({ noteId }) => {
         </div>
         <div className="note-image-container">
           <div className="note-image">
-            <img
-              src={
-                note.imageURL ||
-                "https://koffee-donut.s3.amazonaws.com/no+image.png"
-              }
-              alt="Note"
-            />
+            <picture>
+              {/* WebP version */}
+              <source srcSet={note.imageURL} type="image/webp" />
+              {/* Fallback to default image */}
+              <img
+                src={
+                  note.imageURL ||
+                  "https://koffee-donut.s3.amazonaws.com/no+image.png"
+                }
+                alt="Note"
+                onError={(e) => {
+                  // Fallback in case the image can't be loaded
+                  e.target.src =
+                    "https://koffee-donut.s3.amazonaws.com/no+image.png";
+                }}
+              />
+            </picture>
           </div>
         </div>
+
         <div onClick={viewNote} className="note-content">
           <div className="note-title">
             <a>{shortenTitle(note.title)}</a>
