@@ -41,7 +41,7 @@ const Login = () => {
       setUsername("");
       setPassword("");
       navigate("/");
-      window.scrollTo(0, 0);
+      sessionStorage.removeItem("notesListState");
     } catch (err) {
       if (!err.status) {
         setErrMsg("No Server Response");
