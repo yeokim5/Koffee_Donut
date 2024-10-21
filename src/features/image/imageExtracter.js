@@ -5,12 +5,10 @@ export const imageExtracter = async (editorContent) => {
 };
 
 const getFirstValidImageUrl = async (urls) => {
-  if (urls.length > 0) {
-    const firstUrl = urls[0];
-    console.log(`imageUrl`, firstUrl);
-    return firstUrl;
+  for (const url of urls) {
+    const imageUrl = await getImageUrl(url);
+    if (imageUrl) return imageUrl;
   }
-
   return getDefaultImageUrl();
 };
 
