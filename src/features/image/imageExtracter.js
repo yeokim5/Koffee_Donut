@@ -66,11 +66,11 @@ const getYoutubeImage = (url) => {
 };
 
 const getInstagramImage = async (url) => {
-  return "https://img.freepik.com/premium-vector/instagram-logo-vector_768467-330.jpg";
+  return "https://koffee-donut.s3.amazonaws.com/instagram.webp";
 };
 
 const getTwitterImage = async (url) => {
-  return "https://banner2.cleanpng.com/20240119/sut/transparent-x-logo-logo-brand-identity-company-organization-black-background-white-x-logo-for-1710916376217.webp";
+  return "https://koffee-donut.s3.amazonaws.com/X_logo.webp";
 };
 
 const getDefaultImageUrl = () =>
