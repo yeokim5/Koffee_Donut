@@ -1224,10 +1224,12 @@ note-title a:hover {
   min-height: 100vh;
 }
 
-/* .notes-list > div:last-child { */
-/* position: absolute; */
-/* bottom: 0; */
-/* width: 100%; */
-/* } */
+input[type="text"],
+textarea {
+  font-size: 16px; /* iOS won't zoom if font-size is 16px or larger */
+  touch-action: manipulation; /* Prevents double-tap zooming */
+}
 
-/* CARD POPUP */
+label {
+  touch-action: manipulation; /* Prevents double-tap zooming on labels */
+}
