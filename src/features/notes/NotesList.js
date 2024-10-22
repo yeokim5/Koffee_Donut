@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useCallback, useRef, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   useGetNotesQuery,
@@ -15,207 +9,249 @@ import Note from "./Note";
 import { PulseLoader } from "react-spinners";
 import useAuth from "../../hooks/useAuth";
 
+// Constants
+const NOTES_PER_PAGE = 10;
+const SCROLL_RESTORE_DELAY = 100;
+const STORAGE_KEYS = {
+  STATE: "notesListState",
+  SCROLL: "scrollPosition",
+};
+
+// Memoized components
+const LoadingIndicator = memo(() => (
+  <p style={{ textAlign: "center" }}>
+    <PulseLoader />
+  </p>
+));
+
+const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
+  <div className="view-selector">
+    {["recent", "trend", ...(hasFollowing ? ["following"] : [])].map(
+      (viewOption) => (
+        <button
+          key={viewOption}
+          onClick={() => onViewChange(viewOption)}
+          className={view === viewOption ? "active" : ""}
+        >
+          {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
+        </button>
+      )
+    )}
+  </div>
+));
+
+// Storage utility
+const storage = {
+  get: (key) => {
+    try {
+      return JSON.parse(sessionStorage.getItem(key));
+    } catch {
+      return null;
+    }
+  },
+  set: (key, value) => {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.warn(`Failed to save to sessionStorage: ${key}`, e);
+    }
+  },
+  remove: (key) => sessionStorage.removeItem(key),
+};
+
+// Main component
 const NotesList = () => {
-  const [page, setPage] = useState(1);
-  const [allNotes, setAllNotes] = useState([]);
-  const [view, setView] = useState("recent");
-  const loadingRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { username } = useAuth();
+
+  // Refs
+  const loadingRef = useRef(null);
   const scrollPositionRef = useRef(0);
   const isLoadingRef = useRef(false);
-  const previousHeightRef = useRef(0); // For storing previous page height
-  const navigate = useNavigate();
+  const previousHeightRef = useRef(0);
+  const observerRef = useRef(null);
 
-  const { username } = useAuth();
+  // State initialization with localStorage
+  const [state, setState] = useState(() => {
+    const saved = storage.get(STORAGE_KEYS.STATE) || {};
+    return {
+      page: saved.page || 1,
+      view: saved.view || "recent",
+      allNotes: saved.allNotes || [],
+    };
+  });
+
+  const { page, view, allNotes } = state;
+
+  // Queries with optimized options
   const {
     data: notesData,
     isLoading,
     isSuccess,
     isError,
     error,
-  } = useGetNotesQuery({ page, limit: 10 });
-  const { data: trendingNotesData } = useGetTrendingNotesQuery();
-  const { data: followingNotesData } = useGetFollowerNotesQuery(username);
+  } = useGetNotesQuery(
+    { page, limit: NOTES_PER_PAGE },
+    {
+      skip: view !== "recent",
+      refetchOnMountOrArgChange: false,
+    }
+  );
 
-  const trendingIds = trendingNotesData?.map((note) => note._id) || [];
-  const followingIds = followingNotesData?.ids || [];
+  const { data: trendingNotesData } = useGetTrendingNotesQuery(undefined, {
+    skip: view !== "trend",
+    refetchOnMountOrArgChange: false,
+  });
 
-  // Load saved state on initial render
-  useEffect(() => {
-    const savedState = JSON.parse(sessionStorage.getItem("notesListState"));
-    if (savedState) {
-      setView(savedState.view);
-      setPage(savedState.page);
-      setAllNotes(savedState.allNotes);
+  const { data: followingNotesData } = useGetFollowerNotesQuery(username, {
+    skip: view !== "following" || !username,
+    refetchOnMountOrArgChange: false,
+  });
+
+  // Memoized handlers
+  const handleScroll = useCallback(() => {
+    if (!isLoadingRef.current) {
+      scrollPositionRef.current = window.scrollY;
+      storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current);
     }
   }, []);
 
-  // Save state on unmount
-  useEffect(() => {
-    return () => {
-      const stateToSave = { view, page, allNotes };
-      sessionStorage.setItem("notesListState", JSON.stringify(stateToSave));
-    };
-  }, [view, page, allNotes]);
+  const handleViewChange = useCallback((newView) => {
+    setState((prev) => ({
+      ...prev,
+      view: newView,
+      page: 1,
+      allNotes: [],
+    }));
+    window.scrollTo(0, 0);
+    storage.remove(STORAGE_KEYS.SCROLL);
+  }, []);
 
-  // Save and restore scroll position on location change
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isLoadingRef.current) {
-        scrollPositionRef.current = window.scrollY;
-      }
-    };
-
-    const restoreScrollPosition = () => {
-      const savedPosition = sessionStorage.getItem("scrollPosition");
-      if (savedPosition !== null) {
-        setTimeout(() => {
-          window.scrollTo(0, parseFloat(savedPosition));
-        }, 0);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    if (!isLoadingRef.current) {
-      restoreScrollPosition();
-    }
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (!isLoadingRef.current) {
-        sessionStorage.setItem(
-          "scrollPosition",
-          scrollPositionRef.current.toString()
-        );
-      }
-    };
-  }, [location]);
-
-  // Load more notes with scroll position tracking
   const loadMoreNotes = useCallback(() => {
     if (
       !isLoading &&
-      notesData &&
+      notesData?.totalPages &&
       page < notesData.totalPages &&
       view === "recent"
     ) {
       isLoadingRef.current = true;
-      previousHeightRef.current = document.body.scrollHeight; // Capture current height before loading
-      setPage((prevPage) => prevPage + 1);
+      previousHeightRef.current = document.body.scrollHeight;
+      setState((prev) => ({
+        ...prev,
+        page: prev.page + 1,
+      }));
     }
   }, [isLoading, notesData, page, view]);
 
-  // Update notes when data is fetched
-  useEffect(() => {
+  // Setup intersection observer
+  React.useEffect(() => {
+    if (loadingRef.current && view === "recent") {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) loadMoreNotes();
+        },
+        { threshold: 0.5, rootMargin: "100px" }
+      );
+
+      observerRef.current.observe(loadingRef.current);
+
+      return () => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      };
+    }
+  }, [loadMoreNotes, view]);
+
+  // Save state
+  React.useEffect(() => {
+    const saveState = () => {
+      storage.set(STORAGE_KEYS.STATE, { view, page, allNotes });
+    };
+
+    window.addEventListener("beforeunload", saveState);
+    return () => {
+      window.removeEventListener("beforeunload", saveState);
+      saveState();
+    };
+  }, [view, page, allNotes]);
+
+  // Scroll position management
+  React.useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    const savedPosition = storage.get(STORAGE_KEYS.SCROLL);
+    if (savedPosition !== null) {
+      setTimeout(() => {
+        window.scrollTo(0, savedPosition);
+      }, SCROLL_RESTORE_DELAY);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [location, handleScroll]);
+
+  // Update notes data
+  React.useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
-      setAllNotes((prevNotes) => {
+      setState((prev) => {
         const newNotes = notesData.notes.ids.filter(
-          (id) => !prevNotes.some((note) => note.id === id)
+          (id) => !prev.allNotes.some((note) => note.id === id)
         );
-        const updatedNotes = [...prevNotes, ...newNotes.map((id) => ({ id }))];
-        return updatedNotes;
+        return {
+          ...prev,
+          allNotes: [...prev.allNotes, ...newNotes.map((id) => ({ id }))],
+        };
       });
+
+      // Adjust scroll position after update
+      if (isLoadingRef.current) {
+        requestAnimationFrame(() => {
+          const heightDifference =
+            document.body.scrollHeight - previousHeightRef.current;
+          window.scrollTo(0, scrollPositionRef.current + heightDifference);
+          isLoadingRef.current = false;
+        });
+      }
     }
   }, [isSuccess, notesData, view]);
 
-  // Adjust scroll position after notes are updated
-  useLayoutEffect(() => {
-    if (isLoadingRef.current) {
-      const newHeight = document.body.scrollHeight;
-      const heightDifference = newHeight - previousHeightRef.current; // Difference in height
-      window.scrollTo(0, scrollPositionRef.current + heightDifference); // Adjust scroll position
-      isLoadingRef.current = false;
-    }
-  }, [allNotes]);
-
-  // Infinite scroll observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) loadMoreNotes();
-      },
-      { threshold: 1.0 }
-    );
-
-    if (loadingRef.current) observer.observe(loadingRef.current);
-
-    return () => {
-      if (loadingRef.current) observer.unobserve(loadingRef.current);
-      observer.disconnect();
-    };
-  }, [loadingRef, loadMoreNotes]);
-
-  const handleViewChange = (newView) => {
-    setView(newView);
-    setPage(1);
-    setAllNotes([]);
-    window.scrollTo(0, 0);
-    sessionStorage.removeItem("scrollPosition");
-  };
-  const renderNotes = () => {
-    const noteIds = {
-      recent: allNotes.map((note) => note.id),
-      trend: trendingIds,
-      following: followingIds,
-    }[view];
-
-    return noteIds.length ? (
-      noteIds.map((id) => (
-        <a
-          key={id}
-          href={`/dash/notes/${id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            e.preventDefault();
-            handleNoteClick(id);
-          }}
-          style={{ textDecoration: "none", color: "inherit", display: "block" }}
-        >
-          <Note noteId={id} />
-        </a>
-      ))
-    ) : (
-      <p>No {view} notes found</p>
-    );
-  };
-
-  const handleNoteClick = (noteId) => {
-    sessionStorage.setItem(
-      "scrollPosition",
-      scrollPositionRef.current.toString()
-    );
-  };
-
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
+  if (!isSuccess && view === "recent") return null;
 
-  if (!isSuccess) return null;
+  const noteIds = {
+    recent: allNotes.map((note) => note.id),
+    trend: trendingNotesData?.map((note) => note._id) || [],
+    following: followingNotesData?.ids || [],
+  }[view];
 
   return (
     <>
-      <div className="view-selector">
-        {["recent", "trend", ...(username ? ["following"] : [])].map(
-          (viewOption) => (
-            <button
-              key={viewOption}
-              onClick={() => handleViewChange(viewOption)}
-              className={view === viewOption ? "active" : ""}
-            >
-              {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
-            </button>
-          )
-        )}
-      </div>
+      <ViewSelector
+        view={view}
+        onViewChange={handleViewChange}
+        hasFollowing={!!username}
+      />
       <div className="notes-list">
-        {renderNotes()}
+        {noteIds.length ? (
+          noteIds.map((id) => (
+            <Note
+              key={id}
+              noteId={id}
+              onClick={() =>
+                storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current)
+              }
+            />
+          ))
+        ) : (
+          <p>No {view} notes found</p>
+        )}
         {view === "recent" && (
           <div ref={loadingRef}>
-            {isLoading && <PulseLoader color={"#FFF"} />}
-            {!isLoading && page < notesData.totalPages && (
-              <p style={{ textAlign: "center" }}>
-                <PulseLoader />
-              </p>
+            {(isLoading || page < (notesData?.totalPages || 0)) && (
+              <LoadingIndicator />
             )}
           </div>
         )}
@@ -224,4 +260,4 @@ const NotesList = () => {
   );
 };
 
-export default NotesList;
+export default memo(NotesList);

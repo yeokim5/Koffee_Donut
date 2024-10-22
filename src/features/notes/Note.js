@@ -1,143 +1,143 @@
-import React from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { LuEye } from "react-icons/lu";
 import { useGetNoteByIdQuery } from "./notesApiSlice";
-import PulseLoader from "react-spinners/PulseLoader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 
-const getRelativeTime = (date) => {
+// Moved outside component to prevent recreation
+const DEFAULT_IMAGE = "https://koffee-donut.s3.amazonaws.com/no+image.png";
+
+// Utility functions
+const getRelativeTime = (dateString) => {
+  const date = new Date(dateString);
   const now = new Date();
   const diff = now - date;
   const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
 
   if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(diff / 3600000);
   if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(diff / 86400000);
   return `${days} day${days !== 1 ? "s" : ""} ago`;
 };
 
-const shortenTitle = (title, maxLength = 90) => {
-  if (title.length <= maxLength) return title;
-  return title.substring(0, maxLength - 3) + "...";
-};
-const shortenUsername = (title, maxLength = 13) => {
-  if (title.length <= maxLength) return title;
-  return title.substring(0, maxLength - 3) + "...";
+const shortenText = (text, maxLength) => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength - 3) + "...";
 };
 
-// Helper functions for localStorage management
-const setVisitedNotes = (value) => {
-  const data = {
-    notes: value,
-    timestamp: Date.now(),
-  };
-  localStorage.setItem("visitedNotes", JSON.stringify(data));
-};
+// localStorage utilities with expiration
+const STORAGE_KEY = "visitedNotes";
+const EXPIRATION_HOURS = 2;
 
-const getVisitedNotes = () => {
-  const visitedNotesData = localStorage.getItem("visitedNotes");
-  if (visitedNotesData) {
-    const { notes, timestamp } = JSON.parse(visitedNotesData);
-    const now = Date.now();
-    const hoursPassed = (now - timestamp) / (1000 * 60 * 60);
+const storage = {
+  get: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (!data) return [];
 
-    if (hoursPassed < 2) {
-      return notes;
-    } else {
-      localStorage.removeItem("visitedNotes");
+      const { notes, timestamp } = JSON.parse(data);
+      const hoursPassed = (Date.now() - timestamp) / (1000 * 60 * 60);
+
+      return hoursPassed < EXPIRATION_HOURS ? notes : [];
+    } catch {
+      return [];
     }
-  }
-  return [];
+  },
+  set: (notes) => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          notes,
+          timestamp: Date.now(),
+        })
+      );
+    } catch (e) {
+      console.warn("Failed to save to localStorage:", e);
+    }
+  },
 };
 
-const Note = ({ noteId }) => {
+// Main component
+const Note = memo(({ noteId }) => {
+  const navigate = useNavigate();
+
+  // Optimize query with specific fields selection
   const {
     data: noteData,
-    isLoading,
     isError,
     error,
-  } = useGetNoteByIdQuery(noteId);
+  } = useGetNoteByIdQuery(noteId, {
+    selectFromResult: ({ data, isError, error }) => ({
+      data: data?.note,
+      isError,
+      error,
+    }),
+    refetchOnMountOrArgChange: false, // Prevent unnecessary refetches
+  });
 
-  const navigate = useNavigate();
-  const [isVisited, setIsVisited] = useState(false);
-
-  useEffect(() => {
-    const visitedNotes = getVisitedNotes();
-    setIsVisited(visitedNotes.includes(noteId));
-  }, [noteId]);
-
-  if (isLoading) {
-    return <PulseLoader color={"#FFF"} />;
-  }
-
-  if (isError) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  const note = noteData?.note;
-
-  if (!note) {
-    return <div>Note not found</div>;
-  }
-
-  const createdDate = new Date(note.createdAt);
-  const createdRelative = getRelativeTime(createdDate);
-
-  const viewNote = () => {
-    let visitedNotes = getVisitedNotes();
+  // Memoize event handler
+  const viewNote = useCallback(() => {
+    const visitedNotes = storage.get();
     if (!visitedNotes.includes(noteId)) {
-      visitedNotes.push(noteId);
-      setVisitedNotes(visitedNotes);
-      setIsVisited(true);
+      storage.set([...visitedNotes, noteId]);
     }
     navigate(`/dash/notes/${noteId}`);
-  };
+  }, [noteId, navigate]);
 
-  const linkStyle = {
-    color: isVisited ? "rgb(75, 178, 215)" : "black",
-    textDecoration: "none",
-    cursor: "pointer",
-  };
+  // Memoize derived data before early return
+  const createdRelative = useMemo(
+    () => (noteData ? getRelativeTime(noteData.createdAt) : ""),
+    [noteData?.createdAt]
+  );
+
+  const shortTitle = useMemo(
+    () => (noteData ? shortenText(noteData.title, 90) : ""),
+    [noteData?.title]
+  );
+
+  const shortUsername = useMemo(
+    () => (noteData ? shortenText(noteData.username, 13) : ""),
+    [noteData?.username]
+  );
+
+  // Early return for error states
+  if (isError) return <div>Error: {error.message}</div>;
+  if (!noteData) return null;
 
   return (
     <div className="note-list-container">
       <div className="note-item">
         <div className="list-like">
           <FontAwesomeIcon icon={faCaretUp} />
-          {note.likes}
+          {noteData.likes}
         </div>
+
         <div className="note-image-container">
           <div className="note-image">
-            <picture>
-              {/* WebP version */}
-              <source srcSet={note.imageURL} type="image/webp" />
-              {/* Fallback to default image */}
-              <img
-                src={
-                  note.imageURL ||
-                  "https://koffee-donut.s3.amazonaws.com/no+image.png"
-                }
-                alt="Note"
-                onError={(e) => {
-                  // Fallback in case the image can't be loaded
-                  e.target.src =
-                    "https://koffee-donut.s3.amazonaws.com/no+image.png";
-                }}
-              />
-            </picture>
+            {/* Optimized image loading */}
+            <img
+              src={noteData.imageURL || DEFAULT_IMAGE}
+              alt={shortTitle}
+              loading="lazy"
+              onError={(e) => {
+                e.target.src = DEFAULT_IMAGE;
+              }}
+            />
           </div>
         </div>
 
         <div onClick={viewNote} className="note-content">
           <div className="note-title">
-            <a>{shortenTitle(note.title)}</a>
+            <a>{shortTitle}</a>
           </div>
           <div className="note-details">
             <div className="note-username">
-              <div>{shortenUsername(note.username)}</div>
+              {shortUsername}
               &nbsp;/&nbsp;
               {createdRelative}
               <span className="icon-text">
@@ -145,13 +145,15 @@ const Note = ({ noteId }) => {
                 <LuEye />
                 &nbsp;&nbsp;
               </span>
-              {note.views}
+              {noteData.views}
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
+});
+
+Note.displayName = "Note";
 
 export default Note;
