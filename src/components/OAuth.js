@@ -59,13 +59,11 @@ const OAuth = () => {
     }
   };
 
-  if (isLoading) return <PulseLoader color={"#FFF"} />;
-
   return (
     <>
       <button
         type="button"
-        className="login-button"
+        className={`login-button ${isLoading ? "login-button-disabled" : ""}`}
         onClick={handleGoogleClick}
         disabled={isLoading}
       >
@@ -74,9 +72,9 @@ const OAuth = () => {
           className="google-icon"
           alt="Google logo"
           height={25}
-        />{" "}
+        />
         <span style={{ marginLeft: "10px", fontSize: "0.9rem" }}>
-          Continue with Google
+          {isLoading ? "Wait for Couple Seconds" : "Continue with Google"}
         </span>
       </button>
 

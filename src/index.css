@@ -1233,3 +1233,92 @@ textarea {
 label {
   touch-action: manipulation; /* Prevents double-tap zooming on labels */
 }
+
+/* Updated Login styles */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  max-width: 500px; /* Increased from 400px */
+  margin: 0 auto;
+}
+
+.login-title {
+  font-size: 2.5rem; /* Increased from 2rem */
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 1.2rem; /* Increased from 1rem */
+  color: #666;
+  margin-bottom: 3rem; /* Increased from 2rem */
+  text-align: center;
+}
+
+.login-button-container {
+  width: 100%;
+  max-width: 380px; /* Increased from 300px */
+  display: flex;
+  justify-content: center;
+}
+
+.login-button {
+  width: 100%;
+  padding: 1.2rem 2rem; /* Increased padding */
+  border-radius: 15px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  font-size: 1.2rem; /* Increased from 1rem */
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px; /* Increased from 12px */
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 60px; /* Added minimum height */
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #f8f8f8;
+}
+
+.login-button img {
+  width: 28px; /* Increased from 24px */
+  height: 28px; /* Increased from 24px */
+}
+
+/* Hide error message for popup closed by user */
+.errmsg:contains("Firebase: Error (auth/popup-closed-by-user)") {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .login-title {
+    font-size: 2rem;
+  }
+
+  .login-button {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+  }
+}
