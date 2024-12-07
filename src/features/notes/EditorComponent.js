@@ -107,8 +107,7 @@ const EDITOR_JS_TOOLS = {
     config: {
       services: {
         youtube: {
-          regex:
-            /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]{11})(?:[?&].*)?/,
+          regex: /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:(?:watch\?v=)|(?:embed\/)|(?:v\/))([^#&?]{11}))/,
           embedUrl: "https://www.youtube.com/embed/<%= remote_id %>",
           html: '<iframe style="width:100%;" height="320" frameborder="0" allowfullscreen></iframe>',
           height: 320,
