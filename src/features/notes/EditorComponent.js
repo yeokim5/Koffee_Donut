@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
-import List from "@editorjs/list";
-import Embed from "@editorjs/embed";
 import ImageTool from "@editorjs/image";
+import UniversalEmbed from "./editorjs-youtube-embed-main/src";
 
 const EDITOR_JS_TOOLS = {
   header: Header,
-  list: List,
   image: {
     class: ImageTool,
     config: {
@@ -101,39 +99,7 @@ const EDITOR_JS_TOOLS = {
       },
     },
   },
-  embed: {
-    class: Embed,
-    inlineToolbar: true,
-    config: {
-      services: {
-        youtube: {
-          regex:
-            /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]{11})(?:[?&].*)?/,
-          embedUrl: "https://www.youtube.com/embed/<%= remote_id %>",
-          html: '<iframe style="width:100%;" height="320" frameborder="0" allowfullscreen></iframe>',
-          height: 320,
-          width: 580,
-        },
-        instagram: {
-          regex: /https?:\/\/www\.instagram\.com\/p\/([^\/\?\&]+)\/?.*/,
-          embedUrl: "https://www.instagram.com/p/<%= remote_id %>/embed",
-          html: "<iframe></iframe>",
-        },
-        facebook: true,
-        twitter: true,
-        shorts: {
-          regex: /https?:\/\/youtube\.com\/shorts\/([^\/\?\&]+)\/?.*/,
-          embedUrl: "https://www.youtube.com/embed/<%= remote_id %>",
-          html: '<iframe width="315" height="560" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>',
-        },
-        reels: {
-          regex: /https?:\/\/www\.instagram\.com\/reel\/([^\/\?\&]+)\/?.*/,
-          embedUrl: "https://www.instagram.com/p/<%= remote_id %>/embed",
-          html: "<iframe></iframe>",
-        },
-      },
-    },
-  },
+  embed: UniversalEmbed,
 };
 
 // Add this function outside of EDITOR_JS_TOOLS

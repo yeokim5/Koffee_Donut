@@ -1,6 +1,6 @@
 export const imageExtracter = async (editorContent) => {
   const urls = extractUrls(editorContent);
-  console.log("urls", urls);
+  // console.log("urls", urls);
   return await getFirstValidImageUrl(urls);
 };
 
@@ -17,6 +17,7 @@ const getImageUrl = async (url) => {
     isYoutubeUrl: getYoutubeImage,
     isInstagramUrl: getInstagramImage,
     isTwitterUrl: getTwitterImage,
+    isTikTokUrl: getTikTokImage,
     isDirectImageUrl: (url) => url,
   };
 
@@ -29,20 +30,18 @@ const getImageUrl = async (url) => {
   return null;
 };
 
-/* Extract url from JSON */
 const extractUrls = (editorContent) => {
   try {
     const content = JSON.parse(editorContent);
     const urls = [];
 
     content.blocks.forEach((block) => {
-      if (block.type === "embed") {
-        urls.push(block.data.source);
+      if (block.type === "youtubeEmbed" || block.type === "embed") {
+        urls.push(block.data.url || block.data.source);
       } else if (block.type === "image") {
         urls.push(block.data.file.url);
       }
     });
-    console.log(urls);
     return urls;
   } catch (error) {
     console.error("Error parsing editorContent:", error);
@@ -51,15 +50,36 @@ const extractUrls = (editorContent) => {
 };
 
 const urlCheckers = {
-  isYoutubeUrl: (url) =>
-    url.includes("youtube.com") || url.includes("youtu.be"),
-  isInstagramUrl: (url) => url.includes("instagram.com"),
-  isTwitterUrl: (url) => url.includes("x.com") || url.includes("twitter.com"),
-  isDirectImageUrl: (url) => /\.(png|jpg|jpeg|webp)$/i.test(url),
+  isYoutubeUrl: (url) => {
+    return (
+      url.includes("youtube.com") ||
+      url.includes("youtu.be") ||
+      url.includes("youtube.com/shorts")
+    );
+  },
+  isInstagramUrl: (url) => {
+    return (
+      url.includes("instagram.com/p/") || url.includes("instagram.com/reel/")
+    );
+  },
+  isTwitterUrl: (url) => {
+    return url.includes("x.com") || url.includes("twitter.com");
+  },
+  isTikTokUrl: (url) => {
+    return url.includes("tiktok.com");
+  },
+  isDirectImageUrl: (url) => /\.(png|jpg|jpeg|webp|gif)$/i.test(url),
 };
 
 const getYoutubeImage = (url) => {
-  const videoId = url.match(/(?:v=|\/)([\w-]{11})(?:\?|$)/)?.[1];
+  let videoId;
+  if (url.includes("shorts")) {
+    videoId = url.match(/shorts\/([^?\/]+)/)?.[1];
+  } else {
+    videoId =
+      url.match(/(?:v=|\/)([\w-]{11})(?:\?|$)/)?.[1] ||
+      url.match(/youtu\.be\/([\w-]{11})(?:\?|$)/)?.[1];
+  }
   return videoId ? `http://img.youtube.com/vi/${videoId}/0.jpg` : null;
 };
 
@@ -69,6 +89,10 @@ const getInstagramImage = async (url) => {
 
 const getTwitterImage = async (url) => {
   return "https://koffee-donut.s3.amazonaws.com/X_logo.webp";
+};
+
+const getTikTokImage = async (url) => {
+  return "https://koffee-donut.s3.amazonaws.com/tiktok.webp";
 };
 
 const getDefaultImageUrl = () =>

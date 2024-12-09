@@ -19,6 +19,7 @@
     "cheerio": "^1.0.0",
     "disqus-react": "^1.1.5",
     "easymde": "2.16.0",
+    "editorjs-youtube-embed": "^1.0.3",
     "firebase": "^10.12.3",
     "js-cookie": "^3.0.5",
     "jsdom": "^25.0.1",
