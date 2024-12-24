@@ -159,6 +159,19 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         tools: EDITOR_JS_TOOLS,
         minHeight: 20,
       });
+
+      // Add a listener for window resize to re-initialize the editor
+      const handleResize = () => {
+        if (ejInstance.current) {
+          ejInstance.current.render(); // Re-render the editor
+        }
+      };
+
+      window.addEventListener("resize", handleResize);
+
+      return () => {
+        window.removeEventListener("resize", handleResize); // Cleanup listener
+      };
     } catch (error) {
       console.error("Failed to initialize EditorJS:", error);
     }
