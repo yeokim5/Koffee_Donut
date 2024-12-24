@@ -1324,3 +1324,14 @@ label {
     font-size: 1.1rem;
   }
 }
+
+/* Add this CSS to your styles */
+.ce-popover__container {
+  z-index: 1000; /* Ensure it appears above other elements */
+  position: absolute; /* Position it absolutely */
+  top: 0; /* Adjust as necessary */
+  left: 0; /* Adjust as necessary */
+  right: 0; /* Ensure it stretches across */
+  overflow: visible; /* Ensure it is not clipped */
+  max-height: none; /* Remove any max-height restrictions */
+}
