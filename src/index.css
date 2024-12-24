@@ -218,15 +218,17 @@ a:focus-visible {
 .dash-footer {
   font-size: 1rem;
   padding: 1em;
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 1;
   background-color: var(--BGCOLOR);
   border-top: 1px solid var(--BORDER-COLOR);
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
+  justify-content: center;
+  align-items: center;
   gap: 1em;
 }
 
@@ -771,7 +773,7 @@ note-title a:hover {
   font-size: 1.3rem;
   cursor: pointer; /* Make the entire like section clickable */
   width: 50px;
-  color: #278cff;
+  color: rgb(87, 87, 87);
   flex-shrink: 0; /* Prevent shrinking */
 }
 
