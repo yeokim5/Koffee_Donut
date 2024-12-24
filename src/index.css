@@ -1335,3 +1335,20 @@ label {
   overflow: visible; /* Ensure it is not clipped */
   max-height: none; /* Remove any max-height restrictions */
 }
+
+/* Add this CSS to your styles */
+.ce-popover__overlay {
+  z-index: 999; /* Ensure it appears above other elements */
+  position: fixed; /* Use fixed positioning to cover the viewport */
+  top: 0; /* Cover the top of the viewport */
+  left: 0; /* Cover the left of the viewport */
+  right: 0; /* Cover the right of the viewport */
+  bottom: 0; /* Cover the bottom of the viewport */
+  overflow: visible; /* Ensure it is not clipped */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Optional: semi-transparent background */
+}
