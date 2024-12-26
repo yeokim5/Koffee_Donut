@@ -3,9 +3,17 @@ import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import ImageTool from "@editorjs/image";
 import UniversalEmbed from "./editorjs-youtube-embed-main/src";
+import List from "@editorjs/list";
+import Quote from "@editorjs/quote";
+import Delimiter from "@editorjs/delimiter";
+import Table from "@editorjs/table";
 
 const EDITOR_JS_TOOLS = {
   header: Header,
+  list: List,
+  quote: Quote,
+  delimiter: Delimiter,
+  table: Table,
   image: {
     class: ImageTool,
     config: {
@@ -197,34 +205,7 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
     };
   }, [initEditor]);
 
-  useEffect(() => {
-    // Handle mobile viewport height
-    const handleResize = () => {
-      // Set a CSS variable for the real viewport height
-      document.documentElement.style.setProperty(
-        "--real-viewport-height",
-        `${window.innerHeight}px`
-      );
-    };
-
-    // Initial call
-    handleResize();
-
-    // Add event listeners
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleResize);
-    };
-  }, []);
-
-  return (
-    <div className="editor-wrapper">
-      <div id="editorjs" className="editor-container"></div>
-    </div>
-  );
+  return <div id="editorjs" className="editor-container"></div>;
 };
 
 export default EditorComponent;
