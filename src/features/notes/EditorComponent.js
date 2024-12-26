@@ -183,6 +183,14 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       const element = document.getElementById("editorjs");
       if (element) {
         initEditor();
+
+        // Add event listener to all textareas within the editor
+        const textareas = element.getElementsByTagName("textarea");
+        Array.from(textareas).forEach((textarea) => {
+          textarea.addEventListener("focus", (e) => {
+            e.preventDefault(); // Prevent the keyboard from opening
+          });
+        });
       } else {
         console.error("Editor container element not found");
       }

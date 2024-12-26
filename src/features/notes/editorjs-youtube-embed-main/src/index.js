@@ -59,8 +59,11 @@ export default class UniversalEmbed {
     // YouTube Shorts
     const youtubeShortsMatch = url.match(/youtube\.com\/shorts\/([^\/\?\&]+)/);
 
-    // New patterns
-    const tiktokMatch = url.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/);
+    // Updated TikTok pattern with proper escaping
+    const tiktokMatch = url.match(
+      /(?:tiktok\.com\/@[\\w.-]+\/video\/(\d+)|vt\.tiktok\.com\/([\\w.-]+))/
+    );
+
     const twitterMatch = url.match(/twitter\.com\/\w+\/status\/(\d+)/);
     const xMatch = url.match(/x\.com\/\w+\/status\/(\d+)/);
 
@@ -96,7 +99,7 @@ export default class UniversalEmbed {
       embedContainer.classList.add("youtube-shorts");
       embedContainer.appendChild(iframe);
     } else if (tiktokMatch) {
-      const videoId = tiktokMatch[1];
+      const videoId = tiktokMatch[1] || tiktokMatch[2];
       const iframe = document.createElement("iframe");
       iframe.setAttribute("src", `https://www.tiktok.com/embed/v2/${videoId}`);
       iframe.setAttribute("allowfullscreen", true);
