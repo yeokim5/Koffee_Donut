@@ -121,6 +121,17 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         holder: "editorjs",
         onReady: () => {
           ejInstance.current = editor;
+
+          // Add this code to prevent automatic focus and keyboard popup
+          const editorElement = document.getElementById("editorjs");
+          if (editorElement) {
+            const allContentEditables =
+              editorElement.querySelectorAll("[contenteditable]");
+            allContentEditables.forEach((element) => {
+              element.setAttribute("inputmode", "none");
+              element.setAttribute("tabindex", "-1");
+            });
+          }
         },
         readOnly: readMode,
         data: initialDataRef.current || { blocks: [] },
@@ -183,14 +194,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       const element = document.getElementById("editorjs");
       if (element) {
         initEditor();
-
-        // Add event listener to all textareas within the editor
-        const textareas = element.getElementsByTagName("textarea");
-        Array.from(textareas).forEach((textarea) => {
-          textarea.addEventListener("focus", (e) => {
-            e.preventDefault(); // Prevent the keyboard from opening
-          });
-        });
       } else {
         console.error("Editor container element not found");
       }
@@ -205,7 +208,14 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
     };
   }, [initEditor]);
 
-  return <div id="editorjs" className="editor-container"></div>;
+  return (
+    <div
+      id="editorjs"
+      className="editor-container"
+      inputMode="none"
+      tabIndex="-1"
+    ></div>
+  );
 };
 
 export default EditorComponent;

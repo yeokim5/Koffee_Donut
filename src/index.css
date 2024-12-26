@@ -1322,3 +1322,15 @@ label {
     font-size: 1.1rem;
   }
 }
+
+.editor-container [contenteditable] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Only enable text selection when actually editing */
+.editor-container [contenteditable]:focus {
+  -webkit-user-select: text;
+  user-select: text;
+}
