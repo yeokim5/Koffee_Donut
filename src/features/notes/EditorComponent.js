@@ -121,17 +121,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         holder: "editorjs",
         onReady: () => {
           ejInstance.current = editor;
-
-          // Add this code to prevent automatic focus and keyboard popup
-          const editorElement = document.getElementById("editorjs");
-          if (editorElement) {
-            const allContentEditables =
-              editorElement.querySelectorAll("[contenteditable]");
-            allContentEditables.forEach((element) => {
-              element.setAttribute("inputmode", "none");
-              element.setAttribute("tabindex", "-1");
-            });
-          }
         },
         readOnly: readMode,
         data: initialDataRef.current || { blocks: [] },
@@ -208,13 +197,33 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
     };
   }, [initEditor]);
 
+  useEffect(() => {
+    // Handle mobile viewport height
+    const handleResize = () => {
+      // Set a CSS variable for the real viewport height
+      document.documentElement.style.setProperty(
+        "--real-viewport-height",
+        `${window.innerHeight}px`
+      );
+    };
+
+    // Initial call
+    handleResize();
+
+    // Add event listeners
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, []);
+
   return (
-    <div
-      id="editorjs"
-      className="editor-container"
-      inputMode="none"
-      tabIndex="-1"
-    ></div>
+    <div className="editor-wrapper">
+      <div id="editorjs" className="editor-container"></div>
+    </div>
   );
 };
 
