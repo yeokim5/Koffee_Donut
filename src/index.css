@@ -318,7 +318,7 @@ tr {
 
 .form {
   max-width: 800px;
-  min-height: 550px; /* Fixed height */
+  min-height: 800px;
   width: auto;
   margin: 2rem auto;
   padding: 2rem;
