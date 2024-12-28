@@ -18,19 +18,21 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
   if (result?.error?.status === 403) {
-    try {
-      const refreshResult = await baseQuery("/auth/refresh", api, extraOptions);
-      if (refreshResult?.data) {
-        api.dispatch(setCredentials({ ...refreshResult.data }));
-        // Retry the original query
-        result = await baseQuery(args, api, extraOptions);
-      } else {
-        api.dispatch(logOut());
+    console.log("sending refresh token");
+
+    const refreshResult = await baseQuery("/auth/refresh", api, extraOptions);
+
+    if (refreshResult?.data) {
+      api.dispatch(setCredentials({ ...refreshResult.data }));
+      result = await baseQuery(args, api, extraOptions);
+    } else {
+      if (refreshResult?.error?.status === 403) {
+        refreshResult.error.data.message = "Your login has expired.";
       }
-    } catch (err) {
-      api.dispatch(logOut());
+      return refreshResult;
     }
   }
+
   return result;
 };
 export const apiSlice = createApi({
