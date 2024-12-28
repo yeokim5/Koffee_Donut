@@ -48,7 +48,7 @@ function App() {
 
       if (pendingImages.length === 0) return;
 
-      // Extract just the filenames from the full URLs
+      // Extract just the filenames from the full URL
       const fileNames = pendingImages
         .map((url) => {
           try {
