@@ -10,49 +10,31 @@ import Cookies from "js-cookie";
 const PersistLogin = () => {
   const dispatch = useDispatch();
   const [persist] = usePersist();
-  const token = useSelector(selectCurrentToken) || Cookies.get("token");
-  const [isLoading, setIsLoading] = useState(true);
 
   const [refresh] = useRefreshMutation();
 
+  const token = useSelector(selectCurrentToken);
+  const [triedRefresh, setTriedRefresh] = useState(false);
+
   useEffect(() => {
     const verifyRefreshToken = async () => {
-      console.log("Verifying refresh token");
       try {
         await refresh();
       } catch (err) {
         console.error(err);
-        dispatch(logOut());
       } finally {
-        setIsLoading(false);
+        setTriedRefresh(true);
       }
     };
 
-    if (!token) {
+    if (!token && !triedRefresh && persist) {
       verifyRefreshToken();
     } else {
-      setIsLoading(false);
+      setTriedRefresh(true);
     }
+  }, [token, refresh, persist]);
 
-    // // Set up auto-logout
-    // const autoLogoutTimer = setTimeout(() => {
-    //   console.log("Auto-logout triggered");
-    //   dispatch(logOut());
-    // }, 30000); // 30 seconds
-
-    // return () => clearTimeout(autoLogoutTimer);
-  }, [token, refresh, dispatch]);
-
-  // Check if the token is expired
-  if (token) {
-    const decodedToken = jwtDecode(token);
-    if (Date.now() >= decodedToken.exp * 1000) {
-      console.log("Token expired, logging out");
-      dispatch(logOut());
-    }
-  }
-
-  if (isLoading) {
+  if (!triedRefresh) {
     return <p>Loading...</p>;
   }
 
