@@ -317,16 +317,21 @@ tr {
 }
 
 .form {
-  /* max-width: 800px;
-  min-height: 800px;
+  max-width: 800px;
+
+  min-height: 500px;
+
   width: auto;
+
   margin: 2rem auto;
-  padding: 2rem; */
+
+  padding: 2rem;
+
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* position: relative;
-  overflow: auto; */
+  position: relative;
+  overflow: auto;
 }
 
 .trending-notes .note-item {
@@ -436,10 +441,6 @@ tr {
 }
 
 @media screen and (max-width: 600px) {
-  /* .form {
-    padding: 1rem;
-  } */
-
   .form__title-row h2 {
     font-size: 1.5rem;
   }
