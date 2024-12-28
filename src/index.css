@@ -318,20 +318,13 @@ tr {
 
 .form {
   max-width: 800px;
-
   min-height: 500px;
-
   width: auto;
-
   margin: 2rem auto;
-
   padding: 2rem;
-
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* position: relative; */
-  /* overflow: auto; */
 }
 
 .trending-notes .note-item {
