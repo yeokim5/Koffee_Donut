@@ -183,7 +183,7 @@ a:focus-visible {
 /* || DASH HEADER, CONTAINER & FOOTER */
 
 .dash-header {
-  position: sticky;
+  /* position: sticky; */
   top: -2px;
   z-index: 2;
   background-color: var(--BGCOLOR);
