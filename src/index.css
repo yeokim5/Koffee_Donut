@@ -420,7 +420,7 @@ tr {
 }
 
 .editor-container {
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
   border: 1px solid #e1e1e1;
   border-radius: 4px;
   /* width: 300px; */
@@ -436,9 +436,9 @@ tr {
 }
 
 @media screen and (max-width: 600px) {
-  .form {
+  /* .form {
     padding: 1rem;
-  }
+  } */
 
   .form__title-row h2 {
     font-size: 1.5rem;
