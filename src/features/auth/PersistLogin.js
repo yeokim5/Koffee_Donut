@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRefreshMutation } from "./authApiSlice";
 import usePersist from "../../hooks/usePersist";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCurrentToken, logOut } from "./authSlice";
+// import { selectCurrentToken, logOut } from "./authSlice";
 import jwtDecode from "jwt-decode";
 import Cookies from "js-cookie";
 
@@ -13,7 +13,8 @@ const PersistLogin = () => {
 
   const [refresh] = useRefreshMutation();
 
-  const token = useSelector(selectCurrentToken);
+  // const token = useSelector(selectCurrentToken);
+  const token = "";
   const [triedRefresh, setTriedRefresh] = useState(false);
 
   useEffect(() => {

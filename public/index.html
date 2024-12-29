@@ -32,10 +32,10 @@
 
       function updatePersistValue() {
         // Fetch the latest value of "persist" from localStorage
-        const persistValue = localStorage.getItem("persist");
+        const persistValue = localStorage.getItem("token");
 
         // Update the h1 element's text content
-        h1Element.textContent = persistValue || "No value found for 'persist'";
+        h1Element.textContent = persistValue || "No value found for 'token'";
       }
 
       // Update immediately on page load

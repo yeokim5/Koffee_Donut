@@ -55,7 +55,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         } catch (err) {
           console.log(err);
           // Handle token refresh failure
-          // dispatch(logOut());
+          dispatch(logOut());
         }
       },
     }),

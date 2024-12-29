@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../features/auth/authSlice";
 import { useGoogleLoginMutation } from "../features/auth/authApiSlice";
-import googleIcon from "../img/google-icon.png";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
+import googleIcon from "../img/google-icon.png";
 import PulseLoader from "react-spinners/PulseLoader";
 
 const OAuth = () => {

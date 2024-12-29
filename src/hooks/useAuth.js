@@ -1,10 +1,9 @@
 import { useSelector } from "react-redux";
 import { selectCurrentToken } from "../features/auth/authSlice";
 import jwtDecode from "jwt-decode";
-import Cookies from "js-cookie"; // Import js-cookie
 
 const useAuth = () => {
-  const token = useSelector(selectCurrentToken) || Cookies.get("token"); // Get token from cookies if not in state
+  const token = useSelector(selectCurrentToken);
   let isManager = false;
   let isAdmin = false;
   let status = "Employee";
@@ -22,7 +21,7 @@ const useAuth = () => {
 
       // Check if token is expired
       if (Date.now() >= exp * 1000) {
-        console.log("Token is expired"); // Debugging line
+        console.log("Token is expired");
         return {
           username: "",
           roles: [],
@@ -36,10 +35,13 @@ const useAuth = () => {
       username = decodedUsername;
       roles = decodedRoles;
 
+      isManager = roles.includes("Manager");
+      isAdmin = roles.includes("Admin");
+
       if (isManager) status = "Manager";
       if (isAdmin) status = "Admin";
     } catch (error) {
-      console.error("Error decoding token:", error); // Debugging line
+      console.error("Error decoding token:", error);
     }
   }
 
