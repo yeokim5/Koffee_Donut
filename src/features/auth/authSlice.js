@@ -18,8 +18,8 @@ const authSlice = createSlice({
 
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-      const oneMinuteFromNow = Date.now() + 10 * 1000; // 60 seconds * 1000 milliseconds
-      localStorage.setItem("tokenExpiry", oneMinuteFromNow);
+      const oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000; // 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
+      localStorage.setItem("tokenExpiry", oneDayFromNow);
     },
     logOut: (state) => {
       state.token = null;
