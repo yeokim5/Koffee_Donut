@@ -12,7 +12,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ accessToken: data.accessToken })); // Ensure this matches your token structure
+          // Store both tokens and expiry
+          dispatch(
+            setCredentials({
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+              expiresIn: data.expiresIn,
+            })
+          );
         } catch (err) {
           console.log(err);
         }
@@ -24,6 +31,20 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: { ...credentials },
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setCredentials({
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+              expiresIn: data.expiresIn,
+            })
+          );
+        } catch (err) {
+          console.log(err);
+        }
+      },
     }),
     sendLogout: builder.mutation({
       query: () => ({
@@ -34,9 +55,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
         try {
           await queryFulfilled;
           dispatch(logOut());
-          // localStorage.removeItem("persist");
-          localStorage.removeItem("token");
-          localStorage.removeItem("tokenExpiration");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("tokenExpiry");
           localStorage.removeItem("visitedNotes");
           dispatch(apiSlice.util.resetApiState());
         } catch (err) {
@@ -47,16 +68,21 @@ export const authApiSlice = apiSlice.injectEndpoints({
     refresh: builder.mutation({
       query: () => ({
         url: "/auth/refresh",
-        method: "GET",
+        method: "POST",
+        body: { refreshToken: localStorage.getItem("refreshToken") },
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const { accessToken } = data;
-          dispatch(setCredentials({ accessToken })); // Set new access token
+          dispatch(
+            setCredentials({
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+              expiresIn: data.expiresIn,
+            })
+          );
         } catch (err) {
           console.log(err);
-          // Handle token refresh failure
           dispatch(logOut());
         }
       },
@@ -67,6 +93,20 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: { ...credentials },
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setCredentials({
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+              expiresIn: data.expiresIn,
+            })
+          );
+        } catch (err) {
+          console.log(err);
+        }
+      },
     }),
   }),
 });

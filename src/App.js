@@ -31,12 +31,17 @@ function App() {
   <ToastContainer />;
 
   const dispatch = useDispatch();
+
   useEffect(() => {
-    // Check if the JWT cookie exists on app load
-    const jwt = Cookies.get("jwt");
-    if (!jwt) {
-      dispatch(logOut());
-    }
+    // Check if the tokens exist and haven't expired
+    const refreshToken = localStorage.getItem("refreshToken");
+    const tokenExpiry = localStorage.getItem("tokenExpiry");
+
+    // if (!refreshToken || (tokenExpiry && Date.now() > parseInt(tokenExpiry))) {
+    //   localStorage.removeItem("refreshToken");
+    //   localStorage.removeItem("tokenExpiry");
+    //   dispatch(logOut());
+    // }
   }, [dispatch]);
 
   const cleanupPendingImages = async () => {
@@ -93,7 +98,8 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<PersistLogin />}>
+      <Route>
+        {/* <Route element={<PersistLogin />}> */}
         <Route path="/" element={<DashLayout />}>
           {/* public routes */}
           <Route index element={<Public />} />
