@@ -16,7 +16,7 @@ const Login = () => {
   // const [username, setUsername] = useState("");
   // const [password, setPassword] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  // const [persist, setPersist] = usePersist();
+  const [persist, setPersist] = usePersist();
 
   // const navigate = useNavigate();
   // const dispatch = useDispatch();

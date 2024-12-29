@@ -22,9 +22,9 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.error = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("tokenExpiration");
-      localStorage.removeItem("persist");
+      // localStorage.removeItem("token");
+      // localStorage.removeItem("tokenExpiration");
+      // localStorage.removeItem("persist");
       localStorage.removeItem("visitedNotes");
     },
     setError: (state, action) => {
