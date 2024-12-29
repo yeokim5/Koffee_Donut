@@ -114,7 +114,7 @@ const Note = memo(({ noteId }) => {
       <div className="note-item">
         <div className="list-like">
           <FontAwesomeIcon icon={faCaretUp} />
-          <div style={{ color: "#278cff" }}>{noteData.likes}</div>
+          {noteData.likes}
         </div>
 
         <div className="note-image-container">
