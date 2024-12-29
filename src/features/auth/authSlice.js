@@ -11,15 +11,15 @@ const authSlice = createSlice({
   },
   reducers: {
     setCredentials: (state, action) => {
-      const { accessToken, refreshToken, expiresIn, user } = action.payload;
+      const { accessToken, refreshToken, user } = action.payload;
       state.token = accessToken;
       state.refreshToken = refreshToken;
       state.user = user;
 
-      // Store tokens and expiry in localStorage
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("tokenExpiry", (Date.now() + expiresIn).toString());
+      const oneMinuteFromNow = Date.now() + 10 * 1000; // 60 seconds * 1000 milliseconds
+      localStorage.setItem("tokenExpiry", oneMinuteFromNow);
     },
     logOut: (state) => {
       state.token = null;

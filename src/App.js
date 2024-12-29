@@ -33,15 +33,17 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Check if the tokens exist and haven't expired
-    const refreshToken = localStorage.getItem("refreshToken");
-    const tokenExpiry = localStorage.getItem("tokenExpiry");
+    const checkTokenExpiry = () => {
+      const tokenExpiry = localStorage.getItem("tokenExpiry");
 
-    // if (!refreshToken || (tokenExpiry && Date.now() > parseInt(tokenExpiry))) {
-    //   localStorage.removeItem("refreshToken");
-    //   localStorage.removeItem("tokenExpiry");
-    //   dispatch(logOut());
-    // }
+      if (tokenExpiry && Date.now() > Number(tokenExpiry)) {
+        dispatch(logOut());
+      }
+    };
+
+    const intervalId = setInterval(checkTokenExpiry, 1000); // Check every second
+
+    return () => clearInterval(intervalId); // Cleanup on component unmount
   }, [dispatch]);
 
   const cleanupPendingImages = async () => {

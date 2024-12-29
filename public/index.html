@@ -25,27 +25,6 @@
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body>
-    <h1 id="displayPersist"></h1>
-
-    <script>
-      const h1Element = document.getElementById("displayPersist");
-
-      function updatePersistValue() {
-        // Fetch the latest value of "persist" from localStorage
-        const persistValue = localStorage.getItem("persist");
-        const token = localStorage.getItem("token");
-
-        // Update the h1 element's text content
-        h1Element.textContent =
-          persistValue + " " + token || "No value found for 'persist'";
-      }
-
-      // Update immediately on page load
-      updatePersistValue();
-
-      // Set up an interval to update every 5 seconds (5000ms)
-      setInterval(updatePersistValue, 5000);
-    </script>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>
