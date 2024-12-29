@@ -29,10 +29,10 @@ const OAuth = () => {
         email: resultFromGoogle.user.email,
       };
 
-      console.log("Payload being sent to server:", payload);
+      // console.log("Payload being sent to server:", payload);
 
       const response = await googleLogin(payload).unwrap();
-      console.log("Received data from server:", response);
+      // console.log("Received data from server:", response);
 
       if (response.isFirstTimeUser) {
         console.log("Redirecting to username setup...");
@@ -43,7 +43,7 @@ const OAuth = () => {
           },
         });
       } else {
-        console.log("Logging in existing user...");
+        // console.log("Logging in existing user...");
         dispatch(setCredentials({ accessToken: response.accessToken }));
         navigate("/");
       }

@@ -29,39 +29,6 @@ const shortenText = (text, maxLength) => {
   return text.substring(0, maxLength - 3) + "...";
 };
 
-// localStorage utilities with expiration
-const STORAGE_KEY = "visitedNotes";
-const EXPIRATION_HOURS = 2;
-
-const storage = {
-  get: () => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) return [];
-
-      const { notes, timestamp } = JSON.parse(data);
-      const hoursPassed = (Date.now() - timestamp) / (1000 * 60 * 60);
-
-      return hoursPassed < EXPIRATION_HOURS ? notes : [];
-    } catch {
-      return [];
-    }
-  },
-  set: (notes) => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          notes,
-          timestamp: Date.now(),
-        })
-      );
-    } catch (e) {
-      console.warn("Failed to save to localStorage:", e);
-    }
-  },
-};
-
 // Main component
 const Note = memo(({ noteId }) => {
   const navigate = useNavigate();
@@ -82,10 +49,6 @@ const Note = memo(({ noteId }) => {
 
   // Memoize event handler
   const viewNote = useCallback(() => {
-    const visitedNotes = storage.get();
-    if (!visitedNotes.includes(noteId)) {
-      storage.set([...visitedNotes, noteId]);
-    }
     navigate(`/dash/notes/${noteId}`);
   }, [noteId, navigate]);
 

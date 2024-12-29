@@ -30,6 +30,12 @@ import {
 } from "../users/usersApiSlice";
 import Comment from "../comments/Comment";
 import { imageExtracter } from "../../features/image/imageExtracter";
+import {
+  getLastViewData,
+  setLastViewData,
+  cleanUpExpiredViews,
+  shouldIncrementView,
+} from "../../features/notes/utility";
 
 const EditNoteForm = ({ note, users }) => {
   const { username } = useAuth();
@@ -74,25 +80,25 @@ const EditNoteForm = ({ note, users }) => {
   const [incrementViews] = useIncrementViewsMutation();
 
   useEffect(() => {
-    const incrementViewCount = async () => {
-      const lastViewTimestamp = localStorage.getItem(`lastView_${note.id}`);
-      const currentTime = Date.now();
-      const viewCooldown = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // Clean up expired entries before handling views
+    cleanUpExpiredViews();
 
-      if (
-        !lastViewTimestamp ||
-        currentTime - parseInt(lastViewTimestamp) > viewCooldown
-      ) {
+    const handleView = async () => {
+      if (shouldIncrementView(note.id)) {
         try {
-          await incrementViews(note.id).unwrap();
-          localStorage.setItem(`lastView_${note.id}`, currentTime.toString());
-        } catch (err) {
-          console.error("Failed to increment view count:", err);
+          await incrementViews(note.id);
+
+          // Update the lastView data in localStorage
+          const lastViewData = getLastViewData();
+          lastViewData[note.id] = Date.now();
+          setLastViewData(lastViewData);
+        } catch (error) {
+          console.error("Failed to increment views:", error);
         }
       }
     };
 
-    incrementViewCount();
+    handleView();
   }, [note.id, incrementViews]);
 
   useEffect(() => {

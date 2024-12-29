@@ -24,6 +24,8 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { logOut } from "./features/auth/authSlice";
+import { cleanUpExpiredViews } from "../src/features/notes/utility";
+
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>;
 
 function App() {
@@ -95,6 +97,7 @@ function App() {
 
   // Modified useEffect in App.js
   useEffect(() => {
+    cleanUpExpiredViews();
     cleanupPendingImages();
   }, []);
 
