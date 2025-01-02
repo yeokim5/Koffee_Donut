@@ -4,6 +4,7 @@ import { useGetNoteByIdQuery } from "./notesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { isNoteVisited, setVisitedNote, cleanUpExpiredVisits } from "./utility";
 
 // Moved outside component to prevent recreation
 const DEFAULT_IMAGE = "https://koffee-donut.s3.amazonaws.com/no+image.png";
@@ -49,6 +50,8 @@ const Note = memo(({ noteId }) => {
 
   // Memoize event handler
   const viewNote = useCallback(() => {
+    cleanUpExpiredVisits(); // Clean up expired visits
+    setVisitedNote(noteId); // Mark as visited
     navigate(`/dash/notes/${noteId}`);
   }, [noteId, navigate]);
 
@@ -68,13 +71,16 @@ const Note = memo(({ noteId }) => {
     [noteData?.username]
   );
 
+  // Add isVisited check
+  const isVisited = useMemo(() => isNoteVisited(noteId), [noteId]);
+
   // Early return for error states
   if (isError) return <div>Error: {error.message}</div>;
   if (!noteData) return null;
 
   return (
     <div className="note-list-container">
-      <div className="note-item">
+      <div className={`note-item ${isVisited ? "visited" : ""}`}>
         <div className="list-like">
           <FontAwesomeIcon icon={faCaretUp} />
           {noteData.likes}

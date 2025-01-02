@@ -731,6 +731,11 @@ tr {
 note-title a:hover {
   text-decoration: underline; /* Underline on hover */
 }
+
+.note-title a:visited {
+  color: grey;
+}
+
 .note-details {
   display: flex;
   flex-direction: column;
@@ -1309,4 +1314,8 @@ label {
     padding: 1rem 1.5rem;
     font-size: 1.1rem;
   }
+}
+
+.note-item.visited {
+  opacity: 0.6;
 }

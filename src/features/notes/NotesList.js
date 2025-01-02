@@ -15,6 +15,7 @@ const SCROLL_RESTORE_DELAY = 100;
 const STORAGE_KEYS = {
   STATE: "notesListState",
   SCROLL: "scrollPosition",
+  VISITED: "visitedNotes",
 };
 
 // Memoized components
@@ -107,6 +108,12 @@ const NotesList = () => {
   const { data: followingNotesData } = useGetFollowerNotesQuery(username, {
     skip: view !== "following" || !username,
     refetchOnMountOrArgChange: false,
+  });
+
+  // Add visited links state with sessionStorage persistence
+  const [visitedNotes, setVisitedNotes] = useState(() => {
+    const saved = storage.get(STORAGE_KEYS.VISITED);
+    return saved ? new Set(saved) : new Set();
   });
 
   // Memoized handlers
@@ -218,6 +225,16 @@ const NotesList = () => {
     }
   }, [isSuccess, notesData, view]);
 
+  // Update note click handler
+  const handleNoteClick = useCallback((noteId) => {
+    setVisitedNotes((prev) => {
+      const newSet = new Set(prev).add(noteId);
+      storage.set(STORAGE_KEYS.VISITED, Array.from(newSet));
+      return newSet;
+    });
+    storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current);
+  }, []);
+
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
   if (!isSuccess && view === "recent") return null;
 
@@ -240,9 +257,8 @@ const NotesList = () => {
             <Note
               key={id}
               noteId={id}
-              onClick={() =>
-                storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current)
-              }
+              onClick={() => handleNoteClick(id)}
+              className={visitedNotes.has(id) ? "visited-note" : ""}
             />
           ))
         ) : (
