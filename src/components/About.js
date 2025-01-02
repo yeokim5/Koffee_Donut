@@ -50,6 +50,15 @@ const About = () => {
         </div>
         <div className="signature">
           <p>Enjoy your stay and keep the good vibes brewing!</p>
+          <p className="contact">
+            If you have any questions or feedback, shoot a DM to{" "}
+            <a
+              href="https://www.instagram.com/koffee_donut/"
+              className="instagram-link"
+            >
+              koffee_donut
+            </a>
+          </p>
         </div>
       </div>
       <style jsx>{`
@@ -133,6 +142,17 @@ const About = () => {
           align-items: center;
           justify-content: flex-end;
           margin-top: 8px;
+        }
+        .contact {
+          margin-top: 16px;
+        }
+        .instagram-link {
+          color: #c2185b;
+          text-decoration: underline;
+          font-weight: 600;
+        }
+        .instagram-link:hover {
+          color: #e91e63;
         }
         p {
           margin-bottom: 16px;
