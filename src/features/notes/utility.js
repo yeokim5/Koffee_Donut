@@ -48,7 +48,7 @@ export const setVisitedNote = (noteId) => {
 
 export const cleanUpExpiredVisits = () => {
   const visitedNotes = getVisitedNotes();
-  const oneHourInMs = 10 * 1000;
+  const oneHourInMs = 30 * 60 * 1000;
   const now = Date.now();
 
   // Filter out expired entries
@@ -68,7 +68,7 @@ export const isNoteVisited = (noteId) => {
   if (!visitTime) return false;
 
   const timeDiff = Date.now() - visitTime;
-  const oneHourInMs = 10 * 1000;
+  const oneHourInMs = 30 * 60 * 1000;
 
   return timeDiff < oneHourInMs;
 };
