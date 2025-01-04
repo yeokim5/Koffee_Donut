@@ -30,14 +30,15 @@
 
 /* Instagram post specific (square 1:1 ratio) */
 .embed-wrapper.instagram-post {
-  padding-bottom: 90%;
-  max-width: 315px;
+  padding-bottom: 100%;
+  overflow: hidden;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 .embed-wrapper.instagram-reel {
-  padding-bottom: 90%;
-  max-width: 315px;
+  padding-bottom: 100%;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -55,15 +56,16 @@
   }
 
   .embed-wrapper.instagram-post {
-    padding-bottom: 160%;
+    padding-bottom: 180%;
     max-width: 315px;
     margin: 0 auto;
   }
 
   .embed-wrapper.instagram-reel {
-    padding-bottom: 170%;
+    padding-bottom: 180%;
     max-width: 315px;
     margin: 0 auto;
+    overflow: hidden;
   }
   /* TikTok specific (9:16 ratio) */
   .embed-wrapper.tiktok {

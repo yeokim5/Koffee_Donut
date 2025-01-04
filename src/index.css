@@ -220,7 +220,7 @@ a:focus-visible {
   padding: 1em;
   position: sticky;
   bottom: 0;
-  /* z-index: 1; */
+  z-index: 1;
   background-color: var(--BGCOLOR);
   border-top: 1px solid var(--BORDER-COLOR);
   display: flex;
@@ -228,6 +228,11 @@ a:focus-visible {
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
   gap: 1em;
+}
+
+.ce-popover--opened > .ce-popover__container {
+  z-index: 100;
+  margin-bottom: 50px;
 }
 
 .dash-footer__button {
