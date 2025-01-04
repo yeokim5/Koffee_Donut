@@ -10,10 +10,10 @@ import Table from "@editorjs/table";
 
 const EDITOR_JS_TOOLS = {
   header: Header,
-  list: List,
-  quote: Quote,
-  delimiter: Delimiter,
-  table: Table,
+  // list: List,
+  // quote: Quote,
+  // delimiter: Delimiter,
+  // table: Table,
   image: {
     class: ImageTool,
     config: {
