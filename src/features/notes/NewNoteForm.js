@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import EditorComponent from "./EditorComponent";
 import { imageExtracter } from "../../features/image/imageExtracter";
+import { GoQuestion } from "react-icons/go";
+import HelpPopup from "./HelpPopup";
 
 const NewNoteForm = ({ user }) => {
   const [addNewNote, { isLoading, isSuccess, isError, error }] =
@@ -14,6 +16,7 @@ const NewNoteForm = ({ user }) => {
 
   const [title, setTitle] = useState("");
   const [editorContent, setEditorContent] = useState(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   useEffect(() => {
     if (isSuccess) {
@@ -63,7 +66,14 @@ const NewNoteForm = ({ user }) => {
       <p className={errClass}>{error?.data?.message}</p>
       <form className="form" onSubmit={onSaveNoteClicked}>
         <div className="form__title-row">
-          <h2>New Note</h2>
+          <h2>
+            New Note{" "}
+            <GoQuestion
+              className="GoQuestion"
+              onClick={() => setIsHelpOpen(true)}
+              style={{ cursor: "pointer" }}
+            />
+          </h2>
           <div className="form__action-buttons">
             <button className="icon-button" title="Save" disabled={!canSave}>
               <FontAwesomeIcon icon={faSave} />
@@ -87,6 +97,7 @@ const NewNoteForm = ({ user }) => {
         </label>
         <EditorComponent onChange={handleEditorChange} />
       </form>
+      <HelpPopup isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </>
   );
 };

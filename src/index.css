@@ -230,6 +230,13 @@ a:focus-visible {
   gap: 1em;
 }
 
+.GoQuestion {
+  justify-content: center; /* Centers items horizontally */
+  align-items: center; /* Centers items vertically */
+  text-align: center; /* Optional: Center-align text content */
+  font-size: 1.4rem;
+}
+
 .dash-footer__button {
   font-size: 1rem;
   width: auto;
