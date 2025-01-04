@@ -123,12 +123,48 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef(null);
   const initialDataRef = useRef(initialData);
 
+  // Add observer to watch for class changes
+  const observeEditorClass = () => {
+    const editorElement = document.querySelector(".codex-editor");
+    const dashFooter = document.querySelector(".dash-footer");
+
+    if (!editorElement || !dashFooter) {
+      console.warn("Required elements not found");
+      return;
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "class"
+        ) {
+          const hasToolboxOpen = editorElement.classList.contains(
+            "codex-editor--toolbox-opened"
+          );
+          dashFooter.style.zIndex = hasToolboxOpen ? "0" : "1";
+        }
+      });
+    });
+
+    observer.observe(editorElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return observer;
+  };
+
   const initEditor = useCallback(() => {
     try {
       const editor = new EditorJS({
         holder: "editorjs",
         onReady: () => {
           ejInstance.current = editor;
+          // Start observing after editor is ready
+          const observer = observeEditorClass();
+          // Store observer reference for cleanup
+          ejInstance.current.observer = observer;
         },
         readOnly: readMode,
         data: initialDataRef.current || { blocks: [] },
@@ -136,9 +172,7 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
           if (!readMode) {
             let content = await editor.saver.save();
 
-            // Check if there are no blocks
             if (content.blocks.length === 0) {
-              // Add a text block with "You Can't Leave Note Empty"
               content.blocks.push({
                 type: "paragraph",
                 data: {
@@ -146,7 +180,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
                 },
               });
             } else {
-              // Existing logic for adding an empty paragraph at the end
               const lastBlock = content.blocks[content.blocks.length - 1];
               if (
                 lastBlock.type !== "paragraph" ||
@@ -168,17 +201,16 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         minHeight: 20,
       });
 
-      // Add a listener for window resize to re-initialize the editor
       const handleResize = () => {
         if (ejInstance.current) {
-          ejInstance.current.render(); // Re-render the editor
+          ejInstance.current.render();
         }
       };
 
       window.addEventListener("resize", handleResize);
 
       return () => {
-        window.removeEventListener("resize", handleResize); // Cleanup listener
+        window.removeEventListener("resize", handleResize);
       };
     } catch (error) {
       console.error("Failed to initialize EditorJS:", error);
@@ -186,7 +218,6 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   }, [readMode, onChange]);
 
   useEffect(() => {
-    // Ensure the editor is initialized only once the component has mounted
     if (ejInstance.current === null) {
       const element = document.getElementById("editorjs");
       if (element) {
@@ -196,9 +227,13 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       }
     }
 
-    // Cleanup editor instance on component unmount
+    // Enhanced cleanup
     return () => {
       if (ejInstance.current) {
+        // Disconnect the observer if it exists
+        if (ejInstance.current.observer) {
+          ejInstance.current.observer.disconnect();
+        }
         ejInstance.current.destroy();
         ejInstance.current = null;
       }

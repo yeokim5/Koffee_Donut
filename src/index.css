@@ -230,11 +230,6 @@ a:focus-visible {
   gap: 1em;
 }
 
-.ce-popover--opened > .ce-popover__container {
-  z-index: 100;
-  margin-bottom: 50px;
-}
-
 .dash-footer__button {
   font-size: 1rem;
   width: auto;
