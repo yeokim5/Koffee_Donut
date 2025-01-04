@@ -123,8 +123,8 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef(null);
   const initialDataRef = useRef(initialData);
 
-  // Add observer to watch for class changes
-  const observeEditorClass = () => {
+  // Add observer to watch for both toolbox and settings popover
+  const observeEditorElements = () => {
     const editorElement = document.querySelector(".codex-editor");
     const dashFooter = document.querySelector(".dash-footer");
 
@@ -133,26 +133,77 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       return;
     }
 
-    const observer = new MutationObserver((mutations) => {
+    // Function to check if any popover is open
+    const isAnyPopoverOpen = () => {
+      const hasToolboxOpen = editorElement.classList.contains(
+        "codex-editor--toolbox-opened"
+      );
+      const hasSettingsPopoverOpen = document.querySelector(
+        ".ce-settings .ce-popover--opened"
+      );
+      return hasToolboxOpen || hasSettingsPopoverOpen;
+    };
+
+    // Update z-index based on popover state
+    const updateFooterZIndex = () => {
+      dashFooter.style.zIndex = isAnyPopoverOpen() ? "0" : "1";
+    };
+
+    // Observer for the editor element (toolbox)
+    const editorObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
           mutation.type === "attributes" &&
           mutation.attributeName === "class"
         ) {
-          const hasToolboxOpen = editorElement.classList.contains(
-            "codex-editor--toolbox-opened"
-          );
-          dashFooter.style.zIndex = hasToolboxOpen ? "0" : "1";
+          updateFooterZIndex();
         }
       });
     });
 
-    observer.observe(editorElement, {
+    // Observer for dynamic settings elements
+    const bodyObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.addedNodes.length > 0 ||
+          mutation.removedNodes.length > 0
+        ) {
+          // Check if settings popover was added or removed
+          const settingsElement = document.querySelector(".ce-settings");
+          if (settingsElement) {
+            // Observer for the settings popover
+            const settingsObserver = new MutationObserver((mutations) => {
+              updateFooterZIndex();
+            });
+
+            settingsObserver.observe(settingsElement, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ["class"],
+            });
+
+            // Store the observer for cleanup
+            if (ejInstance.current) {
+              ejInstance.current.settingsObserver = settingsObserver;
+            }
+          }
+        }
+      });
+    });
+
+    // Start observing
+    editorObserver.observe(editorElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
 
-    return observer;
+    bodyObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return { editorObserver, bodyObserver };
   };
 
   const initEditor = useCallback(() => {
@@ -162,9 +213,9 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         onReady: () => {
           ejInstance.current = editor;
           // Start observing after editor is ready
-          const observer = observeEditorClass();
-          // Store observer reference for cleanup
-          ejInstance.current.observer = observer;
+          const observers = observeEditorElements();
+          // Store observer references for cleanup
+          ejInstance.current.observers = observers;
         },
         readOnly: readMode,
         data: initialDataRef.current || { blocks: [] },
@@ -230,9 +281,13 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
     // Enhanced cleanup
     return () => {
       if (ejInstance.current) {
-        // Disconnect the observer if it exists
-        if (ejInstance.current.observer) {
-          ejInstance.current.observer.disconnect();
+        // Disconnect all observers
+        if (ejInstance.current.observers) {
+          ejInstance.current.observers.editorObserver.disconnect();
+          ejInstance.current.observers.bodyObserver.disconnect();
+        }
+        if (ejInstance.current.settingsObserver) {
+          ejInstance.current.settingsObserver.disconnect();
         }
         ejInstance.current.destroy();
         ejInstance.current = null;
