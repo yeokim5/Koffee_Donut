@@ -821,6 +821,9 @@ note-title a:hover {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  position: sticky;
+  top: 0; /* Adjust this value as needed */
+  z-index: 10; /* Optional: To layer it above other content */
 }
 
 .view-selector button {
@@ -1324,5 +1327,5 @@ label {
 }
 
 .note-item.visited {
-  opacity: 0.6;
+  background-color: rgb(233, 233, 233);
 }
