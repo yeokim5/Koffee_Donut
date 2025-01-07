@@ -11,31 +11,54 @@ const initialState = notesAdapter.getInitialState();
 export const notesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNotes: builder.query({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/notes?page=${page}&limit=${limit}`,
-        validateStatus: (response, result) => {
-          return response.status === 200 && !result.isError;
-        },
-      }),
-      transformResponse: (responseData) => {
-        const loadedNotes = responseData.notes.map((note) => {
-          note.id = note._id;
-          return note;
-        });
+      query: ({ page = 1, limit = 10 }) => `/notes?page=${page}&limit=${limit}`,
+      serializeQueryArgs: ({ endpointName }) => {
+        return endpointName;
+      },
+      transformResponse: (response) => {
+        if (!response || !response.notes) {
+          return {
+            notes: [],
+            currentPage: 1,
+            totalPages: 1,
+            totalNotes: 0,
+          };
+        }
+
         return {
-          notes: notesAdapter.setAll(initialState, loadedNotes),
-          currentPage: responseData.currentPage,
-          totalPages: responseData.totalPages,
-          totalNotes: responseData.totalNotes,
+          notes: response.notes.map((note) => ({
+            ...note,
+            id: note._id || note.id,
+          })),
+          currentPage: response.currentPage,
+          totalPages: response.totalPages,
+          totalNotes: response.totalNotes,
         };
       },
-      providesTags: (result, error, arg) => {
-        if (result?.notes?.ids) {
-          return [
-            { type: "Note", id: "LIST" },
-            ...result.notes.ids.map((id) => ({ type: "Note", id })),
-          ];
-        } else return [{ type: "Note", id: "LIST" }];
+      merge: (currentCache, newItems, { arg }) => {
+        if (!currentCache) return newItems;
+
+        if (arg.page === 1) {
+          return newItems;
+        }
+
+        // Create a Set of existing note IDs
+        const existingIds = new Set(
+          currentCache.notes.map((note) => note.id || note._id)
+        );
+
+        // Filter out duplicates from new items
+        const uniqueNewNotes = newItems.notes.filter(
+          (note) => !existingIds.has(note.id || note._id)
+        );
+
+        return {
+          ...newItems,
+          notes: [...(currentCache.notes || []), ...uniqueNewNotes],
+        };
+      },
+      forceRefetch: ({ currentArg, previousArg }) => {
+        return currentArg?.page === 1 || currentArg?.page !== previousArg?.page;
       },
     }),
     addNewNote: builder.mutation({
@@ -62,7 +85,6 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       query: ({ id }) => ({
         url: `/notes/${id}`,
         method: "DELETE",
-        // Remove body since we're sending ID in URL
       }),
       invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
     }),

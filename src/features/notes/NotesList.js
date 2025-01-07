@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, memo } from "react";
+import React, { useState, useCallback, useRef, memo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   useGetNotesQuery,
@@ -8,14 +8,12 @@ import {
 import Note from "./Note";
 import { PulseLoader } from "react-spinners";
 import useAuth from "../../hooks/useAuth";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 // Constants
 const NOTES_PER_PAGE = 10;
-const SCROLL_RESTORE_DELAY = 100;
 const STORAGE_KEYS = {
   STATE: "notesListState",
-  SCROLL: "scrollPosition",
-  VISITED: "visitedNotes",
 };
 
 // Memoized components
@@ -45,19 +43,47 @@ const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
 const storage = {
   get: (key) => {
     try {
-      return JSON.parse(sessionStorage.getItem(key));
+      const item = sessionStorage.getItem(key);
+      if (!item) return null;
+
+      const parsed = JSON.parse(item);
+
+      // Validate the stored data
+      if (parsed && typeof parsed === "object") {
+        // Ensure we have valid page number
+        if (parsed.page && typeof parsed.page === "number") {
+          return parsed;
+        }
+      }
+      // If validation fails, remove invalid data
+      sessionStorage.removeItem(key);
+      return null;
     } catch {
       return null;
     }
   },
   set: (key, value) => {
     try {
-      sessionStorage.setItem(key, JSON.stringify(value));
+      // Validate data before saving
+      if (
+        value &&
+        typeof value === "object" &&
+        value.page &&
+        typeof value.page === "number"
+      ) {
+        sessionStorage.setItem(key, JSON.stringify(value));
+      }
     } catch (e) {
       console.warn(`Failed to save to sessionStorage: ${key}`, e);
     }
   },
-  remove: (key) => sessionStorage.removeItem(key),
+  remove: (key) => {
+    try {
+      sessionStorage.removeItem(key);
+    } catch (e) {
+      console.warn(`Failed to remove from sessionStorage: ${key}`, e);
+    }
+  },
 };
 
 // Main component
@@ -68,22 +94,34 @@ const NotesList = () => {
 
   // Refs
   const loadingRef = useRef(null);
-  const scrollPositionRef = useRef(0);
   const isLoadingRef = useRef(false);
   const previousHeightRef = useRef(0);
   const observerRef = useRef(null);
 
   // State initialization with localStorage
   const [state, setState] = useState(() => {
-    const saved = storage.get(STORAGE_KEYS.STATE) || {};
-    return {
-      page: saved.page || 1,
-      view: saved.view || "recent",
-      allNotes: saved.allNotes || [],
-    };
+    try {
+      // Clear storage on initial load to prevent stale data
+      storage.remove(STORAGE_KEYS.STATE);
+
+      return {
+        page: 1,
+        view: "recent",
+        allNotes: [],
+        hasMore: true,
+      };
+    } catch (error) {
+      console.error("Error initializing state:", error);
+      return {
+        page: 1,
+        view: "recent",
+        allNotes: [],
+        hasMore: true,
+      };
+    }
   });
 
-  const { page, view, allNotes } = state;
+  const { page, view, allNotes, hasMore } = state;
 
   // Queries with optimized options
   const {
@@ -110,30 +148,30 @@ const NotesList = () => {
     refetchOnMountOrArgChange: false,
   });
 
-  // Add visited links state with sessionStorage persistence
-  const [visitedNotes, setVisitedNotes] = useState(() => {
-    const saved = storage.get(STORAGE_KEYS.VISITED);
-    return saved ? new Set(saved) : new Set();
-  });
-
-  // Memoized handlers
-  const handleScroll = useCallback(() => {
-    if (!isLoadingRef.current) {
-      scrollPositionRef.current = window.scrollY;
-      storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current);
-    }
-  }, []);
-
-  const handleViewChange = useCallback((newView) => {
-    setState((prev) => ({
-      ...prev,
-      view: newView,
-      page: 1,
-      allNotes: [],
-    }));
-    window.scrollTo(0, 0);
-    storage.remove(STORAGE_KEYS.SCROLL);
-  }, []);
+  const handleViewChange = useCallback(
+    (newView) => {
+      if (newView === view) {
+        // If clicking the same view, reset to page 1
+        setState((prev) => ({
+          ...prev,
+          page: 1,
+          allNotes: [],
+          hasMore: true,
+        }));
+      } else {
+        // Switching to a different view
+        setState((prev) => ({
+          ...prev,
+          view: newView,
+          page: 1,
+          allNotes: [],
+          hasMore: true,
+        }));
+      }
+      window.scrollTo(0, 0);
+    },
+    [view]
+  );
 
   const loadMoreNotes = useCallback(() => {
     if (
@@ -173,75 +211,90 @@ const NotesList = () => {
 
   // Save state
   React.useEffect(() => {
-    const saveState = () => {
-      storage.set(STORAGE_KEYS.STATE, { view, page, allNotes });
+    const clearAndSaveState = () => {
+      try {
+        // Only save state if we're not on page 1 or if view isn't recent
+        if (page !== 1 || view !== "recent") {
+          storage.set(STORAGE_KEYS.STATE, { view, page, allNotes });
+        } else {
+          storage.remove(STORAGE_KEYS.STATE);
+        }
+      } catch (error) {
+        console.error("Error saving state:", error);
+      }
     };
 
-    window.addEventListener("beforeunload", saveState);
+    window.addEventListener("beforeunload", clearAndSaveState);
     return () => {
-      window.removeEventListener("beforeunload", saveState);
-      saveState();
+      window.removeEventListener("beforeunload", clearAndSaveState);
+      clearAndSaveState();
     };
   }, [view, page, allNotes]);
-
-  // Scroll position management
-  React.useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-
-    const savedPosition = storage.get(STORAGE_KEYS.SCROLL);
-    if (savedPosition !== null) {
-      setTimeout(() => {
-        window.scrollTo(0, savedPosition);
-      }, SCROLL_RESTORE_DELAY);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [location, handleScroll]);
 
   // Update notes data
   React.useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
       setState((prev) => {
-        const newNotes = notesData.notes.ids.filter(
-          (id) => !prev.allNotes.some((note) => note.id === id)
+        const newNotes = notesData.notes || [];
+
+        // If it's page 1, reset the notes array
+        if (page === 1) {
+          return {
+            ...prev,
+            allNotes: newNotes,
+            hasMore: notesData.currentPage < notesData.totalPages,
+          };
+        }
+
+        // For subsequent pages, check for duplicates
+        const existingNotesMap = new Map(
+          prev.allNotes.map((note) => [note.id || note._id, note])
         );
+
+        const uniqueNewNotes = newNotes.filter(
+          (note) => !existingNotesMap.has(note.id || note._id)
+        );
+
         return {
           ...prev,
-          allNotes: [...prev.allNotes, ...newNotes.map((id) => ({ id }))],
+          allNotes: [...prev.allNotes, ...uniqueNewNotes],
+          hasMore: notesData.currentPage < notesData.totalPages,
         };
       });
 
-      // Adjust scroll position after update
-      if (isLoadingRef.current) {
-        requestAnimationFrame(() => {
-          const heightDifference =
-            document.body.scrollHeight - previousHeightRef.current;
-          window.scrollTo(0, scrollPositionRef.current + heightDifference);
-          isLoadingRef.current = false;
-        });
-      }
+      isLoadingRef.current = false;
     }
-  }, [isSuccess, notesData, view]);
+  }, [isSuccess, notesData, view, page]);
 
-  // Update note click handler
-  const handleNoteClick = useCallback((noteId) => {
-    setVisitedNotes((prev) => {
-      const newSet = new Set(prev).add(noteId);
-      storage.set(STORAGE_KEYS.VISITED, Array.from(newSet));
-      return newSet;
-    });
-    storage.set(STORAGE_KEYS.SCROLL, scrollPositionRef.current);
+  const loadMore = useCallback(() => {
+    if (!state.hasMore) return;
+    setState((prev) => ({
+      ...prev,
+      page: prev.page + 1,
+    }));
+  }, [state.hasMore]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        storage.remove(STORAGE_KEYS.STATE);
+      } catch (error) {
+        console.error("Error cleaning up storage:", error);
+      }
+    };
   }, []);
 
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
   if (!isSuccess && view === "recent") return null;
 
   const noteIds = {
-    recent: allNotes.map((note) => note.id),
-    trend: trendingNotesData?.map((note) => note._id) || [],
-    following: followingNotesData?.ids || [],
+    recent: Array.from(
+      new Set(state.allNotes?.map((note) => note.id || note._id) || [])
+    ),
+    trend: Array.from(
+      new Set(trendingNotesData?.map((note) => note._id) || [])
+    ),
+    following: Array.from(new Set(followingNotesData?.ids || [])),
   }[view];
 
   return (
@@ -253,14 +306,7 @@ const NotesList = () => {
       />
       <div className="notes-list">
         {noteIds.length ? (
-          noteIds.map((id) => (
-            <Note
-              key={id}
-              noteId={id}
-              onClick={() => handleNoteClick(id)}
-              className={visitedNotes.has(id) ? "visited-note" : ""}
-            />
-          ))
+          noteIds.map((id) => <Note key={id} noteId={id} />)
         ) : (
           <p>No {view} notes found</p>
         )}

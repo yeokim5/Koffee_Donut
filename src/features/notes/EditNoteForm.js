@@ -114,8 +114,6 @@ const EditNoteForm = ({ note, users }) => {
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
       sessionStorage.removeItem("notesListState");
-      sessionStorage.removeItem("scrollPosition");
-      window.scrollTo(0, 0);
       localStorage.setItem("pendingImage", JSON.stringify([]));
       setFormData({ title: "", editorContent: null, userId: "" });
       navigate("/");
