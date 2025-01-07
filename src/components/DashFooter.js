@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -19,6 +19,13 @@ const DashFooter = () => {
 
   const onGoBackClicked = () => {
     navigate(-1);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const shouldShowGoBackButton = pathname !== "/";
@@ -54,6 +61,15 @@ const DashFooter = () => {
       <Link to="/about">
         <p>About</p>
       </Link>
+      <div className="about-section">
+        <button
+          className="dash-footer__button icon-button"
+          title="Scroll to top"
+          onClick={scrollToTop}
+        >
+          <FontAwesomeIcon icon={faArrowUp} />
+        </button>
+      </div>
       {goBackButton}
     </footer>
   );
