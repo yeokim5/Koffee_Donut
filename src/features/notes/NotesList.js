@@ -29,8 +29,10 @@ const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
       (viewOption) => (
         <button
           key={viewOption}
-          onClick={() => onViewChange(viewOption)}
+          onClick={() => viewOption !== view && onViewChange(viewOption)}
           className={view === viewOption ? "active" : ""}
+          disabled={view === viewOption}
+          style={{ cursor: view === viewOption ? "default" : "pointer" }}
         >
           {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
         </button>
