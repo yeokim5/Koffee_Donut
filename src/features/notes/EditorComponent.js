@@ -68,7 +68,7 @@ const EDITOR_JS_TOOLS = {
           return fetch(process.env.REACT_APP_BACKEND_URL + "/upload", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              // "Content-Type": "application/json",
             },
             body: JSON.stringify({ url }),
           })
