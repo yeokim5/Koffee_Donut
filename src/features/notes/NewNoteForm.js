@@ -20,6 +20,7 @@ const NewNoteForm = ({ user }) => {
 
   useEffect(() => {
     if (isSuccess) {
+      localStorage.setItem("pendingImage", JSON.stringify([]));
       sessionStorage.removeItem("notesListState");
       setTitle("");
       setEditorContent(null);
