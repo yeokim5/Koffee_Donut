@@ -101,10 +101,6 @@ function App() {
     cleanupPendingImages();
   }, []);
 
-  useEffect(() => {
-    console.log("Backend URL:", process.env.REACT_APP_BACKEND_URL);
-  }, []);
-
   return (
     <Routes>
       <Route>
