@@ -25,6 +25,7 @@ const NewNoteForm = ({ user }) => {
       setTitle("");
       setEditorContent(null);
       navigate("/");
+      window.location.reload();
     }
   }, [isSuccess, navigate]);
 
