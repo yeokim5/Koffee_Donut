@@ -117,6 +117,7 @@ const EditNoteForm = ({ note, users }) => {
       localStorage.setItem("pendingImage", JSON.stringify([]));
       setFormData({ title: "", editorContent: null, userId: "" });
       navigate("/");
+      window.location.reload();
       cleanupPendingImages();
     }
   }, [isSuccess, isDelSuccess, navigate]);
