@@ -101,6 +101,13 @@ function App() {
     cleanupPendingImages();
   }, []);
 
+  // Disable browser scroll restoration in React apps
+  // useEffect(() => {
+  //   if ("scrollRestoration" in window.history) {
+  //     window.history.scrollRestoration = "manual";
+  //   }
+  // }, []);
+
   return (
     <Routes>
       <Route>
