@@ -1326,8 +1326,8 @@ label {
   }
 }
 
-.note-item.visited {
-  background-color: rgb(233, 233, 233);
+.note-item.visited a {
+  color: rgb(185, 185, 185);
 }
 
 .view-selector button:disabled {
