@@ -1,22 +1,23 @@
 import React, { useState, useCallback, useRef, memo, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   useGetNotesQuery,
   useGetTrendingNotesQuery,
   useGetFollowerNotesQuery,
 } from "./notesApiSlice";
+import { useScrollPosition } from "../../hooks/useScrollPosition";
 import Note from "./Note";
 import { PulseLoader } from "react-spinners";
 import useAuth from "../../hooks/useAuth";
-import InfiniteScroll from "react-infinite-scroll-component";
 
-// Constants
+// Constants remain the same
 const NOTES_PER_PAGE = 10;
 const STORAGE_KEYS = {
   STATE: "notesListState",
+  SCROLL: "scrollPosition",
 };
 
-// Memoized components
+// Memoized components remain the same
 const LoadingIndicator = memo(() => (
   <p style={{ textAlign: "center" }}>
     <PulseLoader />
@@ -41,7 +42,7 @@ const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
   </div>
 ));
 
-// Storage utility
+// Storage utility remains the same
 const storage = {
   get: (key) => {
     try {
@@ -50,14 +51,11 @@ const storage = {
 
       const parsed = JSON.parse(item);
 
-      // Validate the stored data
       if (parsed && typeof parsed === "object") {
-        // Ensure we have valid page number
         if (parsed.page && typeof parsed.page === "number") {
           return parsed;
         }
       }
-      // If validation fails, remove invalid data
       sessionStorage.removeItem(key);
       return null;
     } catch {
@@ -66,7 +64,6 @@ const storage = {
   },
   set: (key, value) => {
     try {
-      // Validate data before saving
       if (
         value &&
         typeof value === "object" &&
@@ -88,44 +85,35 @@ const storage = {
   },
 };
 
-// Main component
 const NotesList = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { username } = useAuth();
+  const { saveScrollPosition, restoreScrollPosition } = useScrollPosition();
 
-  // Refs
+  // Add returning from note flag
+  const isReturningFromNote = useRef(false);
+
+  // Refs for infinite scroll
   const loadingRef = useRef(null);
   const isLoadingRef = useRef(false);
-  const previousHeightRef = useRef(0);
   const observerRef = useRef(null);
 
-  // State initialization with localStorage
   const [state, setState] = useState(() => {
-    try {
-      // Clear storage on initial load to prevent stale data
-      storage.remove(STORAGE_KEYS.STATE);
-
-      return {
+    // Try to restore previous state on mount
+    const savedState = storage.get(STORAGE_KEYS.STATE);
+    return (
+      savedState || {
         page: 1,
         view: "recent",
         allNotes: [],
         hasMore: true,
-      };
-    } catch (error) {
-      console.error("Error initializing state:", error);
-      return {
-        page: 1,
-        view: "recent",
-        allNotes: [],
-        hasMore: true,
-      };
-    }
+      }
+    );
   });
 
   const { page, view, allNotes, hasMore } = state;
 
-  // Queries with optimized options
+  // Queries remain the same
   const {
     data: notesData,
     isLoading,
@@ -150,10 +138,29 @@ const NotesList = () => {
     refetchOnMountOrArgChange: false,
   });
 
+  // Handle returning from note view
+  useEffect(() => {
+    if (isReturningFromNote.current) {
+      requestAnimationFrame(() => {
+        restoreScrollPosition();
+        isReturningFromNote.current = false;
+      });
+    }
+  }, [restoreScrollPosition]);
+
+  // Modified click handler for notes
+  const handleNoteClick = useCallback(
+    (noteId) => {
+      saveScrollPosition(window.scrollY);
+      isReturningFromNote.current = true;
+    },
+    [saveScrollPosition]
+  );
+
+  // Other handlers remain the same
   const handleViewChange = useCallback(
     (newView) => {
       if (newView === view) {
-        // If clicking the same view, reset to page 1
         setState((prev) => ({
           ...prev,
           page: 1,
@@ -161,7 +168,6 @@ const NotesList = () => {
           hasMore: true,
         }));
       } else {
-        // Switching to a different view
         setState((prev) => ({
           ...prev,
           view: newView,
@@ -170,7 +176,6 @@ const NotesList = () => {
           hasMore: true,
         }));
       }
-      window.scrollTo(0, 0);
     },
     [view]
   );
@@ -183,7 +188,6 @@ const NotesList = () => {
       view === "recent"
     ) {
       isLoadingRef.current = true;
-      previousHeightRef.current = document.body.scrollHeight;
       setState((prev) => ({
         ...prev,
         page: prev.page + 1,
@@ -192,7 +196,7 @@ const NotesList = () => {
   }, [isLoading, notesData, page, view]);
 
   // Setup intersection observer
-  React.useEffect(() => {
+  useEffect(() => {
     if (loadingRef.current && view === "recent") {
       observerRef.current = new IntersectionObserver(
         (entries) => {
@@ -211,11 +215,10 @@ const NotesList = () => {
     }
   }, [loadMoreNotes, view]);
 
-  // Save state
-  React.useEffect(() => {
+  // Save state effect remains the same
+  useEffect(() => {
     const clearAndSaveState = () => {
       try {
-        // Only save state if we're not on page 1 or if view isn't recent
         if (page !== 1 || view !== "recent") {
           storage.set(STORAGE_KEYS.STATE, { view, page, allNotes });
         } else {
@@ -233,13 +236,12 @@ const NotesList = () => {
     };
   }, [view, page, allNotes]);
 
-  // Update notes data
-  React.useEffect(() => {
+  // Update notes data effect remains the same
+  useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
       setState((prev) => {
         const newNotes = notesData.notes || [];
 
-        // If it's page 1, reset the notes array
         if (page === 1) {
           return {
             ...prev,
@@ -248,7 +250,6 @@ const NotesList = () => {
           };
         }
 
-        // For subsequent pages, check for duplicates
         const existingNotesMap = new Map(
           prev.allNotes.map((note) => [note.id || note._id, note])
         );
@@ -263,28 +264,8 @@ const NotesList = () => {
           hasMore: notesData.currentPage < notesData.totalPages,
         };
       });
-
-      isLoadingRef.current = false;
     }
   }, [isSuccess, notesData, view, page]);
-
-  const loadMore = useCallback(() => {
-    if (!state.hasMore) return;
-    setState((prev) => ({
-      ...prev,
-      page: prev.page + 1,
-    }));
-  }, [state.hasMore]);
-
-  useEffect(() => {
-    return () => {
-      try {
-        storage.remove(STORAGE_KEYS.STATE);
-      } catch (error) {
-        console.error("Error cleaning up storage:", error);
-      }
-    };
-  }, []);
 
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
   if (!isSuccess && view === "recent") return null;
@@ -308,7 +289,9 @@ const NotesList = () => {
       />
       <div className="notes-list">
         {noteIds.length ? (
-          noteIds.map((id) => <Note key={id} noteId={id} />)
+          noteIds.map((id) => (
+            <Note key={id} noteId={id} onClick={() => handleNoteClick(id)} />
+          ))
         ) : (
           <p>No {view} notes found</p>
         )}
