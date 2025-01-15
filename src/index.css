@@ -145,10 +145,10 @@ a:any-link {
   color: var(--LINK-COLOR);
 }
 
-a:hover,
+/* a:hover,
 a:focus-visible {
   color: var(--LINK-HOVER);
-}
+} */
 
 /* || PAGES */
 
