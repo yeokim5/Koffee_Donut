@@ -75,7 +75,7 @@ const Note = memo(({ noteId }) => {
   const isVisited = useMemo(() => isNoteVisited(noteId), [noteId]);
 
   // Early return for error states
-  if (isError) return <div>Error: {error.message}</div>;
+  // if (isError) return <div>Error: {error.message}</div>;
   if (!noteData) return null;
 
   return (
