@@ -44,7 +44,8 @@
     "react-scripts": "5.0.1",
     "react-simplemde-editor": "^5.2.0",
     "react-spinners": "^0.13.8",
-    "react-toastify": "^10.0.5"
+    "react-toastify": "^10.0.5",
+    "yallist": "^5.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
