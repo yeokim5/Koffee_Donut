@@ -7,9 +7,6 @@ import Welcome from "./features/auth/Welcome";
 import NotesList from "./features/notes/NotesList";
 import UsersList from "./features/users/UsersList";
 import EditUser from "./features/users/EditUser";
-import NewUserForm from "./features/users/NewUserForm";
-import EditNote from "./features/notes/EditNote";
-import NewNote from "./features/notes/NewNote";
 import Prefetch from "./features/auth/Prefetch";
 import PersistLogin from "./features/auth/PersistLogin";
 import RequireAuth from "./features/auth/RequireAuth";
@@ -17,16 +14,40 @@ import { ROLES } from "./config/roles";
 import useTitle from "./hooks/useTitle";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import UserAccount from "./features/users/UserAccount";
 import SetUsername from "./components/SetUsrename";
-import About from "./components/About";
+import { lazy, Suspense } from "react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { logOut } from "./features/auth/authSlice";
 import { cleanUpExpiredViews } from "../src/features/notes/utility";
+import startKeepAliveService from "./services/keepAliveService";
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>;
+
+// Use lazy loading for non-critical components
+const About = lazy(() => import("./components/About"));
+const UserAccount = lazy(() => import("./features/users/UserAccount"));
+const NewUserForm = lazy(() => import("./features/users/NewUserForm"));
+const EditNote = lazy(() => import("./features/notes/EditNote"));
+const NewNote = lazy(() => import("./features/notes/NewNote"));
+
+// Create a loading component for Suspense fallback
+const LoadingComponent = () => (
+  <div
+    style={{
+      padding: "20px",
+      textAlign: "center",
+      margin: "20px auto",
+      maxWidth: "300px",
+      backgroundColor: "#f8f8f8",
+      borderRadius: "8px",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    }}
+  >
+    <p>Loading...</p>
+  </div>
+);
 
 function App() {
   useTitle("Koffee Donut");
@@ -99,6 +120,7 @@ function App() {
   useEffect(() => {
     cleanUpExpiredViews();
     cleanupPendingImages();
+    startKeepAliveService();
   }, []);
 
   return (
@@ -108,11 +130,39 @@ function App() {
         <Route path="/" element={<DashLayout />}>
           {/* public routes */}
           <Route index element={<Public />} />
-          <Route path="about" element={<About />} />
+          <Route
+            path="about"
+            element={
+              <Suspense fallback={<LoadingComponent />}>
+                <About />
+              </Suspense>
+            }
+          />
           <Route path="login" element={<Login />} />
-          <Route path="dash/notes/:id" element={<EditNote />} />
-          <Route path="dash/users/:username" element={<UserAccount />} />
-          <Route path="dash/users/new" element={<NewUserForm />} />
+          <Route
+            path="dash/notes/:id"
+            element={
+              <Suspense fallback={<LoadingComponent />}>
+                <EditNote />
+              </Suspense>
+            }
+          />
+          <Route
+            path="dash/users/:username"
+            element={
+              <Suspense fallback={<LoadingComponent />}>
+                <UserAccount />
+              </Suspense>
+            }
+          />
+          <Route
+            path="dash/users/new"
+            element={
+              <Suspense fallback={<LoadingComponent />}>
+                <NewUserForm />
+              </Suspense>
+            }
+          />
           <Route path="/set-username" element={<SetUsername />} />
 
           {/* Protected Routes */}
@@ -130,13 +180,27 @@ function App() {
                 >
                   <Route path="users">
                     <Route index element={<UsersList />} />
-                    <Route path="new" element={<NewUserForm />} />
+                    <Route
+                      path="new"
+                      element={
+                        <Suspense fallback={<LoadingComponent />}>
+                          <NewUserForm />
+                        </Suspense>
+                      }
+                    />
                   </Route>
                 </Route>
 
                 <Route path="notes">
                   <Route index element={<NotesList />} />
-                  <Route path="new" element={<NewNote />} />
+                  <Route
+                    path="new"
+                    element={
+                      <Suspense fallback={<LoadingComponent />}>
+                        <NewNote />
+                      </Suspense>
+                    }
+                  />
                 </Route>
               </Route>
               {/* End Dash */}

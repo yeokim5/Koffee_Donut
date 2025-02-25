@@ -85,6 +85,65 @@ const storage = {
   },
 };
 
+// Add a skeleton loader component
+const NoteSkeleton = () => (
+  <div className="note-skeleton">
+    <div className="skeleton-header"></div>
+    <div className="skeleton-body"></div>
+    <div className="skeleton-footer"></div>
+    <style jsx>{`
+      .note-skeleton {
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        animation: pulse 1.5s infinite;
+      }
+      .skeleton-header {
+        height: 24px;
+        background: #e0e0e0;
+        width: 70%;
+        margin-bottom: 12px;
+        border-radius: 4px;
+      }
+      .skeleton-body {
+        height: 100px;
+        background: #e0e0e0;
+        margin-bottom: 12px;
+        border-radius: 4px;
+      }
+      .skeleton-footer {
+        height: 20px;
+        background: #e0e0e0;
+        width: 40%;
+        border-radius: 4px;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+    `}</style>
+  </div>
+);
+
+// Show multiple skeletons
+const NoteSkeletons = ({ count = 5 }) => (
+  <>
+    {Array(count)
+      .fill(0)
+      .map((_, i) => (
+        <NoteSkeleton key={i} />
+      ))}
+  </>
+);
+
 const NotesList = () => {
   const location = useLocation();
   const { username } = useAuth();
