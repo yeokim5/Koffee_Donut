@@ -9,19 +9,27 @@ export const setLastViewData = (data) => {
 };
 
 export const cleanUpExpiredViews = () => {
-  const lastViewData = getLastViewData();
-  const thirtyMinutesInMs = 30 * 60 * 1000;
-  const now = Date.now();
+  try {
+    const visitedNotes = JSON.parse(
+      localStorage.getItem("visitedNotes") || "{}"
+    );
+    const now = Date.now();
+    let hasChanges = false;
 
-  // Filter out expired entries
-  const updatedLastViewData = Object.fromEntries(
-    Object.entries(lastViewData).filter(([noteId, timestamp]) => {
-      return now - timestamp < thirtyMinutesInMs;
-    })
-  );
+    // Remove entries older than 24 hours
+    Object.keys(visitedNotes).forEach((noteId) => {
+      if (now - visitedNotes[noteId].timestamp > 24 * 60 * 60 * 1000) {
+        delete visitedNotes[noteId];
+        hasChanges = true;
+      }
+    });
 
-  // Update the localStorage with only valid entries
-  setLastViewData(updatedLastViewData);
+    if (hasChanges) {
+      localStorage.setItem("visitedNotes", JSON.stringify(visitedNotes));
+    }
+  } catch (error) {
+    console.error("Error cleaning up expired views:", error);
+  }
 };
 
 export const shouldIncrementView = (noteId) => {

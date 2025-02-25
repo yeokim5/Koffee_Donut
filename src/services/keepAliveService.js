@@ -1,28 +1,29 @@
-// Service to keep the backend warm by pinging it regularly
-const pingServer = async () => {
-  try {
-    // Fix the URL construction to avoid double slashes
-    const backendUrl = process.env.REACT_APP_BACKEND_URL.endsWith("/")
-      ? process.env.REACT_APP_BACKEND_URL.slice(0, -1)
-      : process.env.REACT_APP_BACKEND_URL;
-
-    const response = await fetch(`${backendUrl}/ping`, {
-      // Add no-cors mode as a fallback when CORS isn't configured
-      mode: "no-cors",
-    });
-
-    console.log("Keep-alive ping sent");
-  } catch (error) {
-    console.error("Keep-alive ping failed:", error);
-  }
-};
-
+/**
+ * This service helps prevent cold starts by periodically pinging the backend
+ * It keeps the serverless functions warm
+ */
 const startKeepAliveService = () => {
-  // Initial ping
-  pingServer();
+  // Function to ping the backend
+  const pingBackend = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_BACKEND_URL}/ping`, {
+        method: "GET",
+        cache: "no-store", // Ensure we don't cache the response
+      });
+      console.log("Keep-alive ping sent successfully");
+    } catch (error) {
+      console.error("Keep-alive ping failed:", error);
+    }
+  };
 
-  // Ping every 5 minutes
-  setInterval(pingServer, 5 * 60 * 1000);
+  // Initial ping when the app loads
+  pingBackend();
+
+  // Set up interval (every 5 minutes)
+  const intervalId = setInterval(pingBackend, 5 * 60 * 1000);
+
+  // Return function to clear interval if needed
+  return () => clearInterval(intervalId);
 };
 
 export default startKeepAliveService;
