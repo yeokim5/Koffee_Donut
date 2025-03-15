@@ -71,10 +71,10 @@ const NotesList = () => {
   const location = useLocation();
   const { username } = useAuth();
   const { saveScrollPosition, restoreScrollPosition } = useScrollPosition();
-  
+
   const observerRef = useRef(null);
   const loadMoreRef = useRef(null);
-  
+
   const [state, setState] = useState(() => {
     const savedState = storage.get(STORAGE_KEYS.STATE);
     return savedState && savedState.recent
@@ -86,7 +86,6 @@ const NotesList = () => {
           following: { notes: [] },
         };
   });
-  
 
   const { view } = state;
 
@@ -105,19 +104,15 @@ const NotesList = () => {
     }
   );
 
-  const { 
-    data: trendingNotesData,
-    isLoading: trendLoading 
-  } = useGetTrendingNotesQuery(undefined, {
-    skip: view !== "trend",
-  });
+  const { data: trendingNotesData, isLoading: trendLoading } =
+    useGetTrendingNotesQuery(undefined, {
+      skip: view !== "trend",
+    });
 
-  const { 
-    data: followingNotesData,
-    isLoading: followingLoading 
-  } = useGetFollowerNotesQuery(username, {
-    skip: view !== "following" || !username,
-  });
+  const { data: followingNotesData, isLoading: followingLoading } =
+    useGetFollowerNotesQuery(username, {
+      skip: view !== "following" || !username,
+    });
 
   // Restore scroll position
   useEffect(() => {
@@ -131,17 +126,23 @@ const NotesList = () => {
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (view !== "recent" || !loadMoreRef.current || isLoading || !state.recent.hasMore) return;
+    if (
+      view !== "recent" ||
+      !loadMoreRef.current ||
+      isLoading ||
+      !state.recent.hasMore
+    )
+      return;
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && state.recent.hasMore && !isFetching) {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             recent: {
               ...prev.recent,
-              page: prev.recent.page + 1
-            }
+              page: prev.recent.page + 1,
+            },
           }));
         }
       },
@@ -160,17 +161,24 @@ const NotesList = () => {
   // Update notes when new data arrives
   useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         recent: {
           ...prev.recent,
-          notes: prev.recent.page === 1 
-            ? notesData.notes 
-            : [...prev.recent.notes, ...notesData.notes.filter(n => 
-                !prev.recent.notes.some(existing => existing.id === n.id)
-              )],
+          notes:
+            prev.recent.page === 1
+              ? notesData.notes
+              : [
+                  ...prev.recent.notes,
+                  ...notesData.notes.filter(
+                    (n) =>
+                      !prev.recent.notes.some(
+                        (existing) => existing.id === n.id
+                      )
+                  ),
+                ],
           hasMore: notesData.currentPage < notesData.totalPages,
-        }
+        },
       }));
     }
   }, [notesData, isSuccess, view]);
@@ -178,25 +186,31 @@ const NotesList = () => {
   // Update trending and following notes
   useEffect(() => {
     if (trendingNotesData && view === "trend") {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        trend: { notes: trendingNotesData }
+        trend: { notes: trendingNotesData || [] },
       }));
     }
+  }, [trendingNotesData, view]);
+
+  useEffect(() => {
     if (followingNotesData && view === "following") {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        following: { notes: followingNotesData }
+        following: { notes: followingNotesData || [] },
       }));
     }
-  }, [trendingNotesData, followingNotesData, view]);
+  }, [followingNotesData, view]);
 
   // Handlers
   const handleViewChange = useCallback((newView) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       view: newView,
-      recent: newView === "recent" ? { ...prev.recent, page: 1, notes: [] } : prev.recent
+      recent:
+        newView === "recent"
+          ? { ...prev.recent, page: 1, notes: [] }
+          : prev.recent,
     }));
     window.scrollTo(0, 0);
   }, []);
@@ -219,16 +233,17 @@ const NotesList = () => {
 
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
 
-  const notesToShow = {
-    recent: state.recent.notes,
-    trend: state.trend.notes,
-    following: state.following.notes
-  }[view] || [];
+  const notesToShow =
+    {
+      recent: state.recent.notes || [],
+      trend: state.trend.notes || [],
+      following: state.following.notes || [],
+    }[view] || [];
 
   const isViewLoading = {
     recent: isLoading,
     trend: trendLoading,
-    following: followingLoading
+    following: followingLoading,
   }[view];
 
   return (
@@ -243,9 +258,9 @@ const NotesList = () => {
           <LoadingIndicator />
         ) : notesToShow.length ? (
           notesToShow.map((note) => (
-            <Note 
-              key={note.id || note._id} 
-              noteId={note.id || note._id} 
+            <Note
+              key={note.id || note._id}
+              noteId={note.id || note._id}
               onClick={handleNoteClick}
             />
           ))
@@ -253,9 +268,7 @@ const NotesList = () => {
           <p>No {view} notes found</p>
         )}
         {view === "recent" && state.recent.hasMore && (
-          <div ref={loadMoreRef}>
-            {isFetching && <LoadingIndicator />}
-          </div>
+          <div ref={loadMoreRef}>{isFetching && <LoadingIndicator />}</div>
         )}
       </div>
     </>

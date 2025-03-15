@@ -147,7 +147,11 @@ export const notesApiSlice = apiSlice.injectEndpoints({
     getTrendingNotes: builder.query({
       query: () => `/notes/trending`,
       transformResponse: (responseData) => {
-        return responseData;
+        const loadedNotes = responseData.map((note) => ({
+          ...note,
+          id: note._id,
+        }));
+        return loadedNotes;
       },
       providesTags: [{ type: "Note", id: "TRENDING" }],
     }),
@@ -155,20 +159,16 @@ export const notesApiSlice = apiSlice.injectEndpoints({
     getFollowerNotes: builder.query({
       query: (username) => `/notes/following/${username}`,
       transformResponse: (responseData) => {
-        const loadedNotes = responseData.map((note) => {
-          note.id = note._id;
-          return note;
-        });
-        return notesAdapter.setAll(initialState, loadedNotes);
+        const loadedNotes = responseData.map((note) => ({
+          ...note,
+          id: note._id,
+        }));
+        return loadedNotes;
       },
-      providesTags: (result, error, arg) => {
-        if (result?.ids) {
-          return [
-            { type: "Note", id: "FOLLOWER_LIST" },
-            ...result.ids.map((id) => ({ type: "Note", id })),
-          ];
-        } else return [{ type: "Note", id: "FOLLOWER_LIST" }];
-      },
+      providesTags: (result) => [
+        { type: "Note", id: "FOLLOWER_LIST" },
+        ...(result?.map((note) => ({ type: "Note", id: note.id })) || []),
+      ],
     }),
 
     incrementViews: builder.mutation({
