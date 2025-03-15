@@ -10,18 +10,18 @@ import Note from "./Note";
 import { PulseLoader } from "react-spinners";
 import useAuth from "../../hooks/useAuth";
 
-// Constants remain the same
+// Constants
 const NOTES_PER_PAGE = 10;
 const STORAGE_KEYS = {
   STATE: "notesListState",
   SCROLL: "scrollPosition",
 };
 
-// Memoized components remain the same
+// Memoized components
 const LoadingIndicator = memo(() => (
-  <p style={{ textAlign: "center" }}>
+  <div style={{ textAlign: "center", padding: "20px" }}>
     <PulseLoader />
-  </p>
+  </div>
 ));
 
 const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
@@ -30,10 +30,9 @@ const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
       (viewOption) => (
         <button
           key={viewOption}
-          onClick={() => viewOption !== view && onViewChange(viewOption)}
+          onClick={() => onViewChange(viewOption)}
           className={view === viewOption ? "active" : ""}
-          disabled={view === viewOption}
-          style={{ cursor: view === viewOption ? "default" : "pointer" }}
+          style={{ cursor: "pointer" }}
         >
           {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
         </button>
@@ -42,36 +41,19 @@ const ViewSelector = memo(({ view, onViewChange, hasFollowing }) => (
   </div>
 ));
 
-// Storage utility remains the same
+// Storage utility
 const storage = {
   get: (key) => {
     try {
       const item = sessionStorage.getItem(key);
-      if (!item) return null;
-
-      const parsed = JSON.parse(item);
-
-      if (parsed && typeof parsed === "object") {
-        if (parsed.page && typeof parsed.page === "number") {
-          return parsed;
-        }
-      }
-      sessionStorage.removeItem(key);
-      return null;
+      return item ? JSON.parse(item) : null;
     } catch {
       return null;
     }
   },
   set: (key, value) => {
     try {
-      if (
-        value &&
-        typeof value === "object" &&
-        value.page &&
-        typeof value.page === "number"
-      ) {
-        sessionStorage.setItem(key, JSON.stringify(value));
-      }
+      sessionStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
       console.warn(`Failed to save to sessionStorage: ${key}`, e);
     }
@@ -85,258 +67,168 @@ const storage = {
   },
 };
 
-// Add a skeleton loader component
-const NoteSkeleton = () => (
-  <div className="note-skeleton">
-    <div className="skeleton-header"></div>
-    <div className="skeleton-body"></div>
-    <div className="skeleton-footer"></div>
-    <style jsx>{`
-      .note-skeleton {
-        background: #f0f0f0;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
-        animation: pulse 1.5s infinite;
-      }
-      .skeleton-header {
-        height: 24px;
-        background: #e0e0e0;
-        width: 70%;
-        margin-bottom: 12px;
-        border-radius: 4px;
-      }
-      .skeleton-body {
-        height: 100px;
-        background: #e0e0e0;
-        margin-bottom: 12px;
-        border-radius: 4px;
-      }
-      .skeleton-footer {
-        height: 20px;
-        background: #e0e0e0;
-        width: 40%;
-        border-radius: 4px;
-      }
-      @keyframes pulse {
-        0% {
-          opacity: 0.6;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0.6;
-        }
-      }
-    `}</style>
-  </div>
-);
-
-// Show multiple skeletons
-const NoteSkeletons = ({ count = 5 }) => (
-  <>
-    {Array(count)
-      .fill(0)
-      .map((_, i) => (
-        <NoteSkeleton key={i} />
-      ))}
-  </>
-);
-
 const NotesList = () => {
   const location = useLocation();
   const { username } = useAuth();
   const { saveScrollPosition, restoreScrollPosition } = useScrollPosition();
-
-  // Add returning from note flag
-  const isReturningFromNote = useRef(false);
-
-  // Refs for infinite scroll
-  const loadingRef = useRef(null);
-  const isLoadingRef = useRef(false);
+  
   const observerRef = useRef(null);
-
+  const loadMoreRef = useRef(null);
+  
   const [state, setState] = useState(() => {
-    // Try to restore previous state on mount
     const savedState = storage.get(STORAGE_KEYS.STATE);
-    return (
-      savedState || {
-        page: 1,
-        view: "recent",
-        allNotes: [],
-        hasMore: true,
-      }
-    );
+    return savedState && savedState.recent
+      ? savedState
+      : {
+          view: "recent",
+          recent: { page: 1, notes: [], hasMore: true },
+          trend: { notes: [] },
+          following: { notes: [] },
+        };
   });
+  
 
-  const { page, view, allNotes, hasMore } = state;
+  const { view } = state;
 
-  // Queries remain the same
+  // Queries
   const {
     data: notesData,
     isLoading,
+    isFetching,
     isSuccess,
     isError,
     error,
   } = useGetNotesQuery(
-    { page, limit: NOTES_PER_PAGE },
+    { page: state.recent.page, limit: NOTES_PER_PAGE },
     {
       skip: view !== "recent",
-      refetchOnMountOrArgChange: false,
     }
   );
 
-  const { data: trendingNotesData } = useGetTrendingNotesQuery(undefined, {
+  const { 
+    data: trendingNotesData,
+    isLoading: trendLoading 
+  } = useGetTrendingNotesQuery(undefined, {
     skip: view !== "trend",
-    refetchOnMountOrArgChange: false,
   });
 
-  const { data: followingNotesData } = useGetFollowerNotesQuery(username, {
+  const { 
+    data: followingNotesData,
+    isLoading: followingLoading 
+  } = useGetFollowerNotesQuery(username, {
     skip: view !== "following" || !username,
-    refetchOnMountOrArgChange: false,
   });
 
-  // Handle returning from note view
+  // Restore scroll position
   useEffect(() => {
-    if (isReturningFromNote.current) {
+    const savedScroll = storage.get(STORAGE_KEYS.SCROLL);
+    if (savedScroll) {
       requestAnimationFrame(() => {
-        restoreScrollPosition();
-        isReturningFromNote.current = false;
+        window.scrollTo(0, savedScroll);
       });
     }
-  }, [restoreScrollPosition]);
+  }, []);
 
-  // Modified click handler for notes
-  const handleNoteClick = useCallback(
-    (noteId) => {
-      saveScrollPosition(window.scrollY);
-      isReturningFromNote.current = true;
-    },
-    [saveScrollPosition]
-  );
-
-  // Other handlers remain the same
-  const handleViewChange = useCallback(
-    (newView) => {
-      if (newView === view) {
-        setState((prev) => ({
-          ...prev,
-          page: 1,
-          allNotes: [],
-          hasMore: true,
-        }));
-      } else {
-        setState((prev) => ({
-          ...prev,
-          view: newView,
-          page: 1,
-          allNotes: [],
-          hasMore: true,
-        }));
-      }
-    },
-    [view]
-  );
-
-  const loadMoreNotes = useCallback(() => {
-    if (
-      !isLoading &&
-      notesData?.totalPages &&
-      page < notesData.totalPages &&
-      view === "recent"
-    ) {
-      isLoadingRef.current = true;
-      setState((prev) => ({
-        ...prev,
-        page: prev.page + 1,
-      }));
-    }
-  }, [isLoading, notesData, page, view]);
-
-  // Setup intersection observer
+  // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (loadingRef.current && view === "recent") {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) loadMoreNotes();
-        },
-        { threshold: 0.5, rootMargin: "100px" }
-      );
+    if (view !== "recent" || !loadMoreRef.current || isLoading || !state.recent.hasMore) return;
 
-      observerRef.current.observe(loadingRef.current);
-
-      return () => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && state.recent.hasMore && !isFetching) {
+          setState(prev => ({
+            ...prev,
+            recent: {
+              ...prev.recent,
+              page: prev.recent.page + 1
+            }
+          }));
         }
-      };
-    }
-  }, [loadMoreNotes, view]);
+      },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
 
-  // Save state effect remains the same
-  useEffect(() => {
-    const clearAndSaveState = () => {
-      try {
-        if (page !== 1 || view !== "recent") {
-          storage.set(STORAGE_KEYS.STATE, { view, page, allNotes });
-        } else {
-          storage.remove(STORAGE_KEYS.STATE);
-        }
-      } catch (error) {
-        console.error("Error saving state:", error);
-      }
-    };
+    observerRef.current.observe(loadMoreRef.current);
 
-    window.addEventListener("beforeunload", clearAndSaveState);
     return () => {
-      window.removeEventListener("beforeunload", clearAndSaveState);
-      clearAndSaveState();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
-  }, [view, page, allNotes]);
+  }, [view, isLoading, isFetching, state.recent.hasMore]);
 
-  // Update notes data effect remains the same
+  // Update notes when new data arrives
   useEffect(() => {
     if (isSuccess && notesData && view === "recent") {
-      setState((prev) => {
-        const newNotes = notesData.notes || [];
-
-        if (page === 1) {
-          return {
-            ...prev,
-            allNotes: newNotes,
-            hasMore: notesData.currentPage < notesData.totalPages,
-          };
-        }
-
-        const existingNotesMap = new Map(
-          prev.allNotes.map((note) => [note.id || note._id, note])
-        );
-
-        const uniqueNewNotes = newNotes.filter(
-          (note) => !existingNotesMap.has(note.id || note._id)
-        );
-
-        return {
-          ...prev,
-          allNotes: [...prev.allNotes, ...uniqueNewNotes],
+      setState(prev => ({
+        ...prev,
+        recent: {
+          ...prev.recent,
+          notes: prev.recent.page === 1 
+            ? notesData.notes 
+            : [...prev.recent.notes, ...notesData.notes.filter(n => 
+                !prev.recent.notes.some(existing => existing.id === n.id)
+              )],
           hasMore: notesData.currentPage < notesData.totalPages,
-        };
-      });
+        }
+      }));
     }
-  }, [isSuccess, notesData, view, page]);
+  }, [notesData, isSuccess, view]);
+
+  // Update trending and following notes
+  useEffect(() => {
+    if (trendingNotesData && view === "trend") {
+      setState(prev => ({
+        ...prev,
+        trend: { notes: trendingNotesData }
+      }));
+    }
+    if (followingNotesData && view === "following") {
+      setState(prev => ({
+        ...prev,
+        following: { notes: followingNotesData }
+      }));
+    }
+  }, [trendingNotesData, followingNotesData, view]);
+
+  // Handlers
+  const handleViewChange = useCallback((newView) => {
+    setState(prev => ({
+      ...prev,
+      view: newView,
+      recent: newView === "recent" ? { ...prev.recent, page: 1, notes: [] } : prev.recent
+    }));
+    window.scrollTo(0, 0);
+  }, []);
+
+  const handleNoteClick = useCallback(() => {
+    saveScrollPosition(window.scrollY);
+  }, [saveScrollPosition]);
+
+  // Save state before unload
+  useEffect(() => {
+    const saveState = () => {
+      storage.set(STORAGE_KEYS.STATE, state);
+    };
+    window.addEventListener("beforeunload", saveState);
+    return () => {
+      window.removeEventListener("beforeunload", saveState);
+      saveState();
+    };
+  }, [state]);
 
   if (isError) return <p className="errmsg">{error?.data?.message}</p>;
-  if (!isSuccess && view === "recent") return null;
 
-  const noteIds = {
-    recent: Array.from(
-      new Set(state.allNotes?.map((note) => note.id || note._id) || [])
-    ),
-    trend: Array.from(
-      new Set(trendingNotesData?.map((note) => note._id) || [])
-    ),
-    following: Array.from(new Set(followingNotesData?.ids || [])),
+  const notesToShow = {
+    recent: state.recent.notes,
+    trend: state.trend.notes,
+    following: state.following.notes
+  }[view] || [];
+
+  const isViewLoading = {
+    recent: isLoading,
+    trend: trendLoading,
+    following: followingLoading
   }[view];
 
   return (
@@ -347,18 +239,22 @@ const NotesList = () => {
         hasFollowing={!!username}
       />
       <div className="notes-list">
-        {noteIds.length ? (
-          noteIds.map((id) => (
-            <Note key={id} noteId={id} onClick={() => handleNoteClick(id)} />
+        {isViewLoading && !notesToShow.length ? (
+          <LoadingIndicator />
+        ) : notesToShow.length ? (
+          notesToShow.map((note) => (
+            <Note 
+              key={note.id || note._id} 
+              noteId={note.id || note._id} 
+              onClick={handleNoteClick}
+            />
           ))
         ) : (
           <p>No {view} notes found</p>
         )}
-        {view === "recent" && (
-          <div ref={loadingRef}>
-            {(isLoading || page < (notesData?.totalPages || 0)) && (
-              <LoadingIndicator />
-            )}
+        {view === "recent" && state.recent.hasMore && (
+          <div ref={loadMoreRef}>
+            {isFetching && <LoadingIndicator />}
           </div>
         )}
       </div>
