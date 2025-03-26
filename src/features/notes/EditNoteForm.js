@@ -388,7 +388,6 @@ const EditNoteForm = ({ note, users }) => {
     setLikeCount(newLikeCount);
 
     try {
-      console.log("Sending dislike request with userId:", effectiveUserId);
       await dislikeNote({ id: note.id, userId: effectiveUserId }).unwrap();
     } catch (err) {
       // Revert to previous state on error

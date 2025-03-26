@@ -132,12 +132,8 @@ export const notesApiSlice = apiSlice.injectEndpoints({
         };
       },
       onQueryStarted: async ({ id, userId }, { dispatch, queryFulfilled }) => {
-        console.log(
-          `Sending dislike request for note ${id} with userId ${userId}`
-        );
         try {
           const { data } = await queryFulfilled;
-          console.log("Dislike request successful:", data);
         } catch (error) {
           console.error("Dislike request failed:", error);
         }
