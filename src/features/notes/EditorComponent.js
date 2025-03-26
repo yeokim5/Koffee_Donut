@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import ImageTool from "@editorjs/image";
 import UniversalEmbed from "./editorjs-youtube-embed-main/src";
-import List from "@editorjs/list";
-import Quote from "@editorjs/quote";
-import Delimiter from "@editorjs/delimiter";
-import Table from "@editorjs/table";
 
 const EDITOR_JS_TOOLS = {
-  header: Header,
-  // list: List,
-  // quote: Quote,
-  // delimiter: Delimiter,
-  // table: Table,
+  header: {
+    class: Header,
+    config: {
+      placeholder: "Enter a header",
+      levels: [1, 2, 3, 4],
+      defaultLevel: 2,
+    },
+  },
   image: {
     class: ImageTool,
     config: {
@@ -24,7 +23,9 @@ const EDITOR_JS_TOOLS = {
 
           console.log("Uploading file:", file.name);
 
-          return fetch(process.env.REACT_APP_BACKEND_URL + "/upload", {
+          // Remove trailing slash if present to prevent double slashes
+          const baseUrl = process.env.REACT_APP_BACKEND_URL.replace(/\/+$/, "");
+          return fetch(`${baseUrl}/upload`, {
             method: "POST",
             body: formData,
           })
@@ -39,12 +40,7 @@ const EDITOR_JS_TOOLS = {
               return response.json();
             })
             .then((result) => {
-              console.log("Server success response:", result);
-              console.log(
-                "This image should be stored in deltedImages",
-                result.file.url
-              );
-              // Update pendingImage in localStorage
+              console.log("Upload success:", result);
               updatePendingImages(result.file.url);
               if (result.success === 0) {
                 throw new Error(result.error || "Upload failed");
@@ -65,17 +61,19 @@ const EDITOR_JS_TOOLS = {
             });
         },
         uploadByUrl(url) {
-          return fetch(process.env.REACT_APP_BACKEND_URL + "/upload", {
+          // Remove trailing slash if present to prevent double slashes
+          const baseUrl = process.env.REACT_APP_BACKEND_URL.replace(/\/+$/, "");
+          return fetch(`${baseUrl}/upload`, {
             method: "POST",
             headers: {
-              // "Content-Type": "application/json",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ url }),
           })
             .then(async (response) => {
               if (!response.ok) {
                 const errorBody = await response.text();
-                console.error("Server response:", errorBody);
+                console.error("Server error response:", errorBody);
                 throw new Error(
                   `HTTP error! status: ${response.status}, body: ${errorBody}`
                 );
@@ -83,8 +81,7 @@ const EDITOR_JS_TOOLS = {
               return response.json();
             })
             .then((result) => {
-              console.log("Server response:", result);
-              // Update pendingImage in localStorage
+              console.log("Upload success:", result);
               updatePendingImages(result.file.url);
               if (result.success === 0) {
                 throw new Error(result.error || "Upload failed");
@@ -97,7 +94,7 @@ const EDITOR_JS_TOOLS = {
               };
             })
             .catch((error) => {
-              console.error("Detailed error:", error);
+              console.error("Upload error:", error);
               return {
                 success: 0,
                 error: error.message || "Upload failed",
@@ -110,7 +107,6 @@ const EDITOR_JS_TOOLS = {
   embed: UniversalEmbed,
 };
 
-// Add this function outside of EDITOR_JS_TOOLS
 function updatePendingImages(newImageUrl) {
   const existingImages = JSON.parse(
     localStorage.getItem("pendingImage") || "[]"
@@ -123,33 +119,25 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
   const ejInstance = useRef(null);
   const initialDataRef = useRef(initialData);
 
-  // Add observer to watch for both toolbox and settings popover
   const observeEditorElements = () => {
     const editorElement = document.querySelector(".codex-editor");
     const dashFooter = document.querySelector(".dash-footer");
-
     if (!editorElement || !dashFooter) {
       console.warn("Required elements not found");
       return;
     }
 
-    // Function to check if any popover is open
     const isAnyPopoverOpen = () => {
-      const hasToolboxOpen = editorElement.classList.contains(
-        "codex-editor--toolbox-opened"
+      return (
+        editorElement.classList.contains("codex-editor--toolbox-opened") ||
+        document.querySelector(".ce-settings .ce-popover--opened")
       );
-      const hasSettingsPopoverOpen = document.querySelector(
-        ".ce-settings .ce-popover--opened"
-      );
-      return hasToolboxOpen || hasSettingsPopoverOpen;
     };
 
-    // Update z-index based on popover state
     const updateFooterZIndex = () => {
       dashFooter.style.zIndex = isAnyPopoverOpen() ? "0" : "1";
     };
 
-    // Observer for the editor element (toolbox)
     const editorObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
@@ -161,29 +149,18 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       });
     });
 
-    // Observer for dynamic settings elements
     const bodyObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (
-          mutation.addedNodes.length > 0 ||
-          mutation.removedNodes.length > 0
-        ) {
-          // Check if settings popover was added or removed
+        if (mutation.addedNodes.length || mutation.removedNodes.length) {
           const settingsElement = document.querySelector(".ce-settings");
           if (settingsElement) {
-            // Observer for the settings popover
-            const settingsObserver = new MutationObserver((mutations) => {
-              updateFooterZIndex();
-            });
-
+            const settingsObserver = new MutationObserver(updateFooterZIndex);
             settingsObserver.observe(settingsElement, {
               childList: true,
               subtree: true,
               attributes: true,
               attributeFilter: ["class"],
             });
-
-            // Store the observer for cleanup
             if (ejInstance.current) {
               ejInstance.current.settingsObserver = settingsObserver;
             }
@@ -192,17 +169,11 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       });
     });
 
-    // Start observing
     editorObserver.observe(editorElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
-
-    bodyObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
     return { editorObserver, bodyObserver };
   };
 
@@ -212,57 +183,30 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         holder: "editorjs",
         onReady: () => {
           ejInstance.current = editor;
-          // Start observing after editor is ready
           const observers = observeEditorElements();
-          // Store observer references for cleanup
           ejInstance.current.observers = observers;
         },
         readOnly: readMode,
         data: initialDataRef.current || { blocks: [] },
         onChange: async () => {
           if (!readMode) {
-            let content = await editor.saver.save();
-
-            if (content.blocks.length === 0) {
-              content.blocks.push({
-                type: "paragraph",
-                data: {
-                  text: "Empty",
-                },
-              });
-            } else {
-              const lastBlock = content.blocks[content.blocks.length - 1];
-              if (
-                lastBlock.type !== "paragraph" ||
-                !lastBlock.data.text.trim()
-              ) {
+            try {
+              const content = await editor.saver.save();
+              if (!content.blocks.length) {
                 content.blocks.push({
                   type: "paragraph",
-                  data: {
-                    text: "",
-                  },
+                  data: { text: "" },
                 });
               }
+              onChange(content);
+            } catch (error) {
+              console.error("Error saving content:", error);
             }
-
-            onChange(content);
           }
         },
         tools: EDITOR_JS_TOOLS,
         minHeight: 20,
       });
-
-      const handleResize = () => {
-        if (ejInstance.current) {
-          ejInstance.current.render();
-        }
-      };
-
-      window.addEventListener("resize", handleResize);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
     } catch (error) {
       console.error("Failed to initialize EditorJS:", error);
     }
@@ -278,10 +222,8 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
       }
     }
 
-    // Enhanced cleanup
     return () => {
       if (ejInstance.current) {
-        // Disconnect all observers
         if (ejInstance.current.observers) {
           ejInstance.current.observers.editorObserver.disconnect();
           ejInstance.current.observers.bodyObserver.disconnect();
@@ -289,13 +231,13 @@ const EditorComponent = ({ initialData, onChange, readMode }) => {
         if (ejInstance.current.settingsObserver) {
           ejInstance.current.settingsObserver.disconnect();
         }
-        ejInstance.current.destroy();
+        ejInstance.current.destroy?.();
         ejInstance.current = null;
       }
     };
   }, [initEditor]);
 
-  return <div id="editorjs" className="editor-container"></div>;
+  return <div id="editorjs" className="editor-container" />;
 };
 
 export default EditorComponent;

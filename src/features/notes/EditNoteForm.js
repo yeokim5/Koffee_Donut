@@ -61,7 +61,7 @@ const EditNoteForm = ({ note, users }) => {
 
   const [formData, setFormData] = useState({
     title: note.title,
-    editorContent: JSON.parse(note.text),
+    editorContent: JSON.parse(note.text) || { blocks: [] },
     completed: note.completed,
     userId: note.user,
   });
@@ -160,45 +160,45 @@ const EditNoteForm = ({ note, users }) => {
   };
 
   const canSave = useMemo(() => {
-    return (
-      [formData.title, formData.editorContent, formData.userId].every(
-        Boolean
-      ) &&
+    const result =
+      formData.title &&
+      formData.editorContent &&
+      formData.userId &&
       !isLoading &&
-      username
-    );
-  }, [formData, isLoading, username]);
+      username;
 
+    return result;
+  }, [formData, isLoading, username]);
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
-    if (canSave) {
-      try {
-        let imageUrl;
-        if (formData.editorContent) {
-          try {
-            imageUrl = await imageExtracter(
-              JSON.stringify(formData.editorContent)
-            );
-          } catch (error) {
-            console.error("Error extracting image URL:", error);
-          }
-        }
+    console.log("Save button clicked"); // Confirm button click
+    console.log("canSave:", canSave); // Check if save is allowed
+    console.log("Current formData:", formData); // Check the data before saving
 
-        // Save the updated note
-        await updateNote({
-          id: note.id,
-          user: username,
-          title: formData.title,
-          text: JSON.stringify(formData.editorContent),
-          completed: formData.completed,
-          imageURL: imageUrl,
-        });
+    if (!canSave) {
+      console.log("Cannot save: required fields missing or loading");
+      return;
+    }
 
-        // Clean up deleted images after successful note update
-        await cleanupPendingImages();
-      } catch (error) {
-        console.error("Error saving note:", error);
-      }
+    try {
+      console.log("Attempting to save with data:", formData);
+      const imageUrl = formData.editorContent
+        ? await imageExtracter(JSON.stringify(formData.editorContent))
+        : null;
+
+      const response = await updateNote({
+        id: note.id,
+        user: formData.userId, // Make sure we're using the stored userId from the note
+        title: formData.title,
+        text: JSON.stringify(formData.editorContent),
+        completed: formData.completed,
+        imageURL: imageUrl,
+      }).unwrap();
+
+      console.log("Save response:", response);
+      await cleanupPendingImages();
+    } catch (err) {
+      console.error("Error saving note:", err);
     }
   };
 
