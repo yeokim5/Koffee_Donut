@@ -82,8 +82,8 @@ const Note = memo(({ noteId }) => {
     <div className="note-list-container">
       <div className={`note-item ${isVisited ? "visited" : ""}`}>
         <div className="list-like">
-          <FontAwesomeIcon icon={faCaretUp} />
-          {noteData.likes}
+          {/* <FontAwesomeIcon icon={faCaretUp} />
+          {noteData.likes} */}
         </div>
 
         <div className="note-image-container">

@@ -21,7 +21,6 @@ import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { logOut } from "./features/auth/authSlice";
 import { cleanUpExpiredViews } from "../src/features/notes/utility";
-import startKeepAliveService from "./services/keepAliveService";
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>;
 
@@ -120,7 +119,6 @@ function App() {
   useEffect(() => {
     cleanUpExpiredViews();
     cleanupPendingImages();
-    startKeepAliveService();
   }, []);
 
   return (

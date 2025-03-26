@@ -96,21 +96,57 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     likeNote: builder.mutation({
-      query: ({ id, userId }) => ({
-        url: `/notes/${id}/like`,
-        method: "PATCH",
-        body: { userId },
-      }),
-      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+      query: ({ id, userId }) => {
+        if (!userId) {
+          throw new Error("User ID is required for liking a note");
+        }
+        return {
+          url: `/notes/${id}/like`,
+          method: "PATCH",
+          body: { userId },
+        };
+      },
+      onQueryStarted: async ({ id, userId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+        } catch (error) {
+          console.error("Like request failed:", error);
+        }
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: "Note", id: arg.id },
+        { type: "Note", id: "LIST" },
+        { type: "Note", id: "TRENDING" },
+      ],
     }),
 
     dislikeNote: builder.mutation({
-      query: ({ id, userId }) => ({
-        url: `/notes/${id}/dislike`,
-        method: "PATCH",
-        body: { userId },
-      }),
-      invalidatesTags: (result, error, arg) => [{ type: "Note", id: arg.id }],
+      query: ({ id, userId }) => {
+        if (!userId) {
+          throw new Error("User ID is required for disliking a note");
+        }
+        return {
+          url: `/notes/${id}/dislike`,
+          method: "PATCH",
+          body: { userId },
+        };
+      },
+      onQueryStarted: async ({ id, userId }, { dispatch, queryFulfilled }) => {
+        console.log(
+          `Sending dislike request for note ${id} with userId ${userId}`
+        );
+        try {
+          const { data } = await queryFulfilled;
+          console.log("Dislike request successful:", data);
+        } catch (error) {
+          console.error("Dislike request failed:", error);
+        }
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: "Note", id: arg.id },
+        { type: "Note", id: "LIST" },
+        { type: "Note", id: "TRENDING" },
+      ],
     }),
 
     getNoteById: builder.query({

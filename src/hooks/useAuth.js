@@ -9,6 +9,7 @@ const useAuth = () => {
   let status = "Employee";
   let username = "";
   let roles = [];
+  let userId = "";
 
   if (token) {
     try {
@@ -17,6 +18,7 @@ const useAuth = () => {
         username: decodedUsername,
         roles: decodedRoles,
         exp,
+        userId: decodedUserId,
       } = decoded.UserInfo;
 
       // Check if token is expired
@@ -29,11 +31,16 @@ const useAuth = () => {
           isManager: false,
           isAdmin: false,
           isAuthenticated: false,
+          userId: "",
         };
       }
 
-      username = decodedUsername;
-      roles = decodedRoles;
+      username = decodedUsername || "";
+      roles = decodedRoles || [];
+      userId = decodedUserId || "";
+
+      // Log the data extracted from token for debugging
+      // console.log("Token data:", { username, userId, roles });
 
       isManager = roles.includes("Manager");
       isAdmin = roles.includes("Admin");
@@ -42,8 +49,20 @@ const useAuth = () => {
       if (isAdmin) status = "Admin";
     } catch (error) {
       console.error("Error decoding token:", error);
+      return {
+        username: "",
+        roles: [],
+        status: "Employee",
+        isManager: false,
+        isAdmin: false,
+        isAuthenticated: false,
+        userId: "",
+      };
     }
   }
+
+  // Explicitly consider a user authenticated if they have a username
+  const isAuthenticated = Boolean(username && username.trim() !== "");
 
   return {
     username,
@@ -51,7 +70,8 @@ const useAuth = () => {
     status,
     isManager,
     isAdmin,
-    isAuthenticated: Boolean(username),
+    isAuthenticated,
+    userId,
   };
 };
 

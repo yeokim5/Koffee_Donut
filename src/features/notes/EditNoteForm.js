@@ -38,7 +38,7 @@ import {
 } from "../../features/notes/utility";
 
 const EditNoteForm = ({ note, users }) => {
-  const { username } = useAuth();
+  const { username, userId, isAuthenticated } = useAuth();
   const [updateNote, { isLoading, isSuccess, isError, error }] =
     useUpdateNoteMutation();
   const [
@@ -56,7 +56,9 @@ const EditNoteForm = ({ note, users }) => {
   const user = userData;
   const note_owner = note.username ? note.username : "unknown user";
 
-  const userId = user?.id;
+  // Get actual user ID from userData when available
+  const currentUserId = userData?.id;
+
   const [formData, setFormData] = useState({
     title: note.title,
     editorContent: JSON.parse(note.text),
@@ -65,9 +67,12 @@ const EditNoteForm = ({ note, users }) => {
   });
   const [editMode, setEditMode] = useState(false);
 
-  const [liked, setLiked] = useState(note.likedBy.includes(userId));
-  const [disliked, setDisliked] = useState(note.dislikedBy.includes(userId));
-  const [likeCount, setLikeCount] = useState(note.likes);
+  // Initialize like/dislike state based on the note data
+  const [liked, setLiked] = useState(note.likedBy?.includes(userId) || false);
+  const [disliked, setDisliked] = useState(
+    note.dislikedBy?.includes(userId) || false
+  );
+  const [likeCount, setLikeCount] = useState(note.likes || 0);
   const { data: commentsData, isLoading: isLoadingComments } =
     useGetCommentsQuery(note.id);
   const [addComment] = useAddCommentMutation();
@@ -160,9 +165,9 @@ const EditNoteForm = ({ note, users }) => {
         Boolean
       ) &&
       !isLoading &&
-      userId
+      username
     );
-  }, [formData, isLoading, userId]);
+  }, [formData, isLoading, username]);
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
@@ -182,7 +187,7 @@ const EditNoteForm = ({ note, users }) => {
         // Save the updated note
         await updateNote({
           id: note.id,
-          user: userId,
+          user: username,
           title: formData.title,
           text: JSON.stringify(formData.editorContent),
           completed: formData.completed,
@@ -274,46 +279,122 @@ const EditNoteForm = ({ note, users }) => {
   const errClass = isError || isDelError ? "errmsg" : "offscreen";
   const validTitleClass = !formData.title ? "form__input--incomplete" : "";
 
+  // Update state when note data changes
+  useEffect(() => {
+    if (note && username) {
+      // First check if we have a user ID from userData
+      const effectiveUserId = currentUserId || userId;
+
+      if (effectiveUserId) {
+        // Convert userId to string for proper comparison with MongoDB ObjectIds
+        const userIdStr = effectiveUserId.toString();
+
+        // Check if likedBy and dislikedBy arrays exist and if userId is in them
+        const userLiked =
+          Array.isArray(note.likedBy) &&
+          note.likedBy.some((id) => id.toString() === userIdStr);
+
+        const userDisliked =
+          Array.isArray(note.dislikedBy) &&
+          note.dislikedBy.some((id) => id.toString() === userIdStr);
+
+        setLiked(userLiked);
+        setDisliked(userDisliked);
+        setLikeCount(note.likes || 0);
+      }
+    }
+  }, [note, userId, currentUserId, username]);
+
+  const checkUserLoggedIn = () => {
+    // Check if username exists - this is our most reliable indicator
+    if (!username) {
+      alert("You need to login to perform this action");
+      return false;
+    }
+    return true;
+  };
+
   const onLikeClicked = async () => {
-    if (!userId) {
-      alert("User need to Login");
+    if (!checkUserLoggedIn()) return;
+
+    // Get the effective user ID
+    const effectiveUserId = currentUserId || userId;
+
+    if (!effectiveUserId) {
+      console.error("Cannot like: no valid user ID available");
+      alert("User authentication issue. Please try logging in again.");
       return;
     }
 
-    const wasDisliked = disliked;
+    // Store previous state to revert if API call fails
+    const prevLiked = liked;
+    const prevDisliked = disliked;
+    const prevLikeCount = likeCount;
+
+    // Optimistically update UI
     setLiked(!liked);
     if (disliked) setDisliked(false);
 
-    setLikeCount((prev) => prev + (liked ? -1 : 1) + (wasDisliked ? 1 : 0));
+    // Calculate new like count
+    let newLikeCount = likeCount;
+    if (liked) {
+      newLikeCount -= 1; // Remove like
+    } else {
+      newLikeCount += 1; // Add like
+      if (disliked) newLikeCount += 1; // Also remove dislike
+    }
+    setLikeCount(newLikeCount);
 
     try {
-      await likeNote({ id: note.id, userId }).unwrap();
+      await likeNote({ id: note.id, userId: effectiveUserId }).unwrap();
     } catch (err) {
-      setLiked(liked);
-      if (wasDisliked) setDisliked(true);
-      setLikeCount(note.likes);
+      // Revert to previous state on error
+      setLiked(prevLiked);
+      setDisliked(prevDisliked);
+      setLikeCount(prevLikeCount);
       console.error("Failed to update like status:", err);
     }
   };
 
   const onDislikeClicked = async () => {
-    if (!userId) {
-      alert("User need to Login");
+    if (!checkUserLoggedIn()) return;
+
+    // Get the effective user ID
+    const effectiveUserId = currentUserId || userId;
+
+    if (!effectiveUserId) {
+      console.error("Cannot dislike: no valid user ID available");
+      alert("User authentication issue. Please try logging in again.");
       return;
     }
 
-    const wasLiked = liked;
+    // Store previous state to revert if API call fails
+    const prevLiked = liked;
+    const prevDisliked = disliked;
+    const prevLikeCount = likeCount;
+
+    // Optimistically update UI
     setDisliked(!disliked);
     if (liked) setLiked(false);
 
-    setLikeCount((prev) => prev - (disliked ? -1 : 1) - (wasLiked ? 1 : 0));
+    // Calculate new like count
+    let newLikeCount = likeCount;
+    if (disliked) {
+      newLikeCount += 1; // Remove dislike
+    } else {
+      newLikeCount -= 1; // Add dislike
+      if (liked) newLikeCount -= 1; // Also remove like
+    }
+    setLikeCount(newLikeCount);
 
     try {
-      await dislikeNote({ id: note.id, userId }).unwrap();
+      console.log("Sending dislike request with userId:", effectiveUserId);
+      await dislikeNote({ id: note.id, userId: effectiveUserId }).unwrap();
     } catch (err) {
-      setDisliked(disliked);
-      if (wasLiked) setLiked(true);
-      setLikeCount(note.likes);
+      // Revert to previous state on error
+      setLiked(prevLiked);
+      setDisliked(prevDisliked);
+      setLikeCount(prevLikeCount);
       console.error("Failed to update dislike status:", err);
     }
   };
@@ -354,10 +435,7 @@ const EditNoteForm = ({ note, users }) => {
   );
 
   const handleAddComment = async () => {
-    if (!username) {
-      alert("User need to Login");
-      return;
-    }
+    if (!checkUserLoggedIn()) return;
 
     if (newCommentText.trim()) {
       try {
@@ -537,6 +615,7 @@ const EditNoteForm = ({ note, users }) => {
                   className="like-button like"
                   title="Like"
                   onClick={onLikeClicked}
+                  aria-label={liked ? "Unlike" : "Like"}
                 >
                   <FontAwesomeIcon icon={faCaretUp} />
                 </button>
@@ -547,6 +626,7 @@ const EditNoteForm = ({ note, users }) => {
                   className="like-button dislike"
                   title="Dislike"
                   onClick={onDislikeClicked}
+                  aria-label={disliked ? "Undo dislike" : "Dislike"}
                 >
                   <FontAwesomeIcon icon={faCaretDown} />
                 </button>
