@@ -106,8 +106,8 @@ const Note = memo(({ noteId }) => {
           </div>
           <div className="note-details">
             <div className="note-username">
-              {/* {shortUsername} */}
-              {/* &nbsp;/&nbsp; */}
+              {shortUsername}
+              &nbsp;/&nbsp;
               {createdRelative}
               <span className="icon-text">
                 &nbsp;&nbsp;&nbsp;&nbsp;
