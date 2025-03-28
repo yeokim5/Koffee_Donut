@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { setCredentials } from "../features/auth/authSlice";
 import { useSetUsernameMutation } from "../features/auth/authApiSlice";
 
-const USER_REGEX = /^[A-Za-z0-9]{3,20}$/;
+const USER_REGEX = /^[A-Za-z0-9_]{3,20}$/;
 
 const SetUsername = () => {
   const [username, setUsername] = useState("");
@@ -24,7 +24,9 @@ const SetUsername = () => {
     setError(null);
 
     if (!validUsername) {
-      setError("Invalid username. Please use 3-20 letters only.");
+      setError(
+        "Invalid username. Please use 3-20 letters, numbers, or underscores."
+      );
       return;
     }
 
@@ -50,7 +52,7 @@ const SetUsername = () => {
       <h2>Choose Your Username</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username" className="form__label">
-          Username[3-20 letters]:
+          Username[3-20 letters, numbers, or underscores]:
         </label>
         <input
           type="text"
@@ -60,7 +62,7 @@ const SetUsername = () => {
           }`}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username (3-20 letters)"
+          placeholder="Enter your username (3-20 letters, numbers, or underscores)"
           required
         />
         <button
