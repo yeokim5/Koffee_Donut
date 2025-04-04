@@ -523,7 +523,12 @@ tr {
   width: 70%;
   margin-left: 15%;
 }
-
+.ce-paragraph {
+  font-size: 16px;
+}
+.ce-header {
+  font-size: 20px;
+}
 .embed-tool__content[src*="instagram.com"] {
   height: 710px;
 }
